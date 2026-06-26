@@ -1,5 +1,7 @@
+import os
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -35,10 +37,37 @@ class Settings(BaseSettings):
     max_concurrent_crawls: int = 10
     research_timeout_minutes: int = 120
 
+    railway_service_name: Optional[str] = None
+
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+
+    railway_db = os.environ.get("DATABASE_URL")
+    if railway_db and railway_db.startswith("postgresql://"):
+        settings.database_url = railway_db.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+    railway_redis = os.environ.get("REDIS_URL")
+    if railway_redis:
+        settings.redis_url = railway_redis
+
+    rail_url = os.environ.get("RAILWAY_STATIC_URL")
+    if rail_url:
+        settings.cors_origins = [
+            f"https://{rail_url}",
+            f"https://frontend-{rail_url}",
+            "http://localhost:3000",
+            "http://localhost:5173",
+        ]
+
+    rail_api_url = os.environ.get("RAILWAY_PRIVATE_DOMAIN")
+    if rail_api_url:
+        settings.cors_origins.append(f"https://{rail_api_url}")
+
+    return settings
