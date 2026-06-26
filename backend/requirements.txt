@@ -1,0 +1,16 @@
+fastapi>=0.115.0
+uvicorn[standard]
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.30.0
+alembic
+python-jose[cryptography]
+bcrypt>=4.0.0
+python-multipart
+pydantic[email]
+pydantic-settings
+httpx
+openai>=1.0.0
+redis
+apscheduler
+sentry-sdk
+polar-sdk
