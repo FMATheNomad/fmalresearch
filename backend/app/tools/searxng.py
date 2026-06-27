@@ -49,7 +49,7 @@ async def _search_duckduckgo(query: str, max_results: int = 10) -> list[dict]:
             for i, r in enumerate(ddgs.text(query, max_results=max_results)):
                 results.append({
                     "title": r.get("title", ""),
-                    "url": r.get("href", ""),
+                    "url": r.get("href") or r.get("url", ""),
                     "snippet": r.get("body", ""),
                     "engine": "duckduckgo",
                     "score": max_results - i,

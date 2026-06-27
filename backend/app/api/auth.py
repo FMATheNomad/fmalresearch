@@ -52,7 +52,8 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     db.add(user)
     await db.commit()
 
-    verify_url = f"{settings.google_redirect_uri.replace('/google/callback', '')}/auth/verify-email?token={verification_token}"
+    base_url = settings.google_redirect_uri.replace('/google/callback', '') if settings.google_redirect_uri else "http://localhost:8000"
+    verify_url = f"{base_url}/auth/verify-email?token={verification_token}"
     logger.info("user_registered", user_id=user.id, verify_url=verify_url)
 
     await send_verification_email(user.email, verify_url)

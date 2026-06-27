@@ -1,8 +1,7 @@
-import json
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.user import User
@@ -55,38 +54,6 @@ async def create_research(
         status=session.status,
         cost_estimate=estimate["cost"],
         estimated_duration_minutes=estimate["duration"],
-    )
-
-
-@router.get("/{session_id}", response_model=ResearchResult)
-async def get_research(
-    session_id: str,
-    user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    session = await db.get(ResearchSession, session_id)
-    if not session or session.user_id != user.id:
-        raise HTTPException(status_code=404, detail="Research session not found")
-
-    claims_result = await db.execute(select(Claim).where(Claim.session_id == session_id))
-    claims = claims_result.scalars().all()
-
-    confidence_scores = None
-    if claims:
-        confidence_scores = {
-            c.text: {"confidence": c.confidence, "supporting": c.supporting_sources,
-                     "conflicting": c.conflicting_sources} for c in claims
-        }
-
-    return ResearchResult(
-        id=session.id,
-        query=session.query,
-        status=session.status,
-        report=session.report,
-        sources_count=session.sources_count,
-        cost_incurred=session.cost_incurred,
-        confidence_scores=confidence_scores,
-        research_graph=session.research_graph,
     )
 
 
@@ -214,3 +181,35 @@ async def export_research(
     return PlainTextResponse(md, media_type="text/markdown", headers={
         "Content-Disposition": f"attachment; filename=research-{session_id[:8]}.md"
     })
+
+
+@router.get("/{session_id}", response_model=ResearchResult)
+async def get_research(
+    session_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    session = await db.get(ResearchSession, session_id)
+    if not session or session.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Research session not found")
+
+    claims_result = await db.execute(select(Claim).where(Claim.session_id == session_id))
+    claims = claims_result.scalars().all()
+
+    confidence_scores = None
+    if claims:
+        confidence_scores = {
+            c.text: {"confidence": c.confidence, "supporting": c.supporting_sources,
+                     "conflicting": c.conflicting_sources} for c in claims
+        }
+
+    return ResearchResult(
+        id=session.id,
+        query=session.query,
+        status=session.status,
+        report=session.report,
+        sources_count=session.sources_count,
+        cost_incurred=session.cost_incurred,
+        confidence_scores=confidence_scores,
+        research_graph=session.research_graph,
+    )
