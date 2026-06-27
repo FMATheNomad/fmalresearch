@@ -1,34 +1,33 @@
-FROM python:3.12-slim AS backend-build
-WORKDIR /app
+FROM python:3.12-slim
+
+# Install Node.js for frontend
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install backend deps
+WORKDIR /app/backend
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ .
 
-FROM node:20-alpine AS frontend-build
-WORKDIR /app
+# Build frontend
+WORKDIR /app/build-frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ .
-RUN npm run build
+RUN npm run build && cp -r .next/standalone /app/frontend \
+    && cp -r public /app/frontend/public \
+    && cp -r .next/static /app/frontend/.next/static \
+    && rm -rf /app/build-frontend
 
-FROM python:3.12-slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    supervisor curl nodejs npm \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app/backend
-COPY --from=backend-build /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=backend-build /usr/local/bin /usr/local/bin
-COPY backend/ .
-
-WORKDIR /app/frontend
-COPY --from=frontend-build /app/.next/standalone /app/frontend
-COPY --from=frontend-build /app/public /app/frontend/public
-COPY --from=frontend-build /app/.next/static /app/frontend/.next/static
-
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy start script
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
+
+WORKDIR /app
 
 EXPOSE 3000 8000
 
