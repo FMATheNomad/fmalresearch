@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://fmalresearch.railway.internal:8000";
+const BACKEND_URL = "http://fmalresearch.railway.internal:8080";
 
 const nextConfig: NextConfig = {
   output: "standalone",
