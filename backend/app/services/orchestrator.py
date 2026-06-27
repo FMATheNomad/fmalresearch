@@ -50,6 +50,17 @@ async def start_research(session_id: str):
                 }
 
                 if tool_calls:
+                    tc_list = []
+                    for tc in tool_calls:
+                        fn = tc.function
+                        tc_list.append({
+                            "id": tc.id, "type": "function",
+                            "function": {"name": fn.name, "arguments": fn.arguments}
+                        })
+
+                    assistant_msg["tool_calls"] = tc_list
+                    messages.append(assistant_msg)
+
                     for tc in tool_calls:
                         fn = tc.function
                         tool_name = fn.name
@@ -59,23 +70,15 @@ async def start_research(session_id: str):
                             arguments = {}
 
                         await notify_tool_call(session_id, tool_name, "running", {"arguments": arguments})
-
                         result = await execute_tool(tool_name, arguments, session.id, db)
-
                         result_str = json.dumps(result) if not isinstance(result, str) else (result or "{}")
                         await notify_tool_call(session_id, tool_name, "completed", {"result": result_str[:200]})
 
-                        assistant_msg["tool_calls"] = [{
-                            "id": tc.id, "type": "function",
-                            "function": {"name": tool_name, "arguments": fn.arguments}
-                        }]
-                        messages.append(assistant_msg)
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tc.id,
                             "content": result_str,
                         })
-                        assistant_msg = {"role": "assistant", "content": ""}
 
                         if tool_name == "fetch_content" and isinstance(result, dict) and result.get("content"):
                             quality = min(len(result["content"]) / 500, 100)
