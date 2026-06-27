@@ -1,3 +1,4 @@
+import json
 from app.services.deepseek import chat_completion, MODE_CONFIGS
 from app.services.orchestrator import execute_tool, COST_PER_INPUT_TOKEN, COST_PER_OUTPUT_TOKEN
 from app.core.logging import get_logger
@@ -85,7 +86,6 @@ async def run_parallel_sub_agents(session_id: str, query: str, user_id: str):
                         for tc in tool_calls:
                             fn = tc.function
                             try:
-                                import json
                                 arguments = json.loads(fn.arguments)
                             except json.JSONDecodeError:
                                 arguments = {}

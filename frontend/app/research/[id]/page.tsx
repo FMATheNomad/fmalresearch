@@ -9,6 +9,15 @@ import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 import { ResearchWebSocket } from "@/lib/ws"
 
+function sanitizeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+}
+
 type GraphNode = { id: string; label: string; type: string; status: string }
 type GraphEdge = { source: string; target: string }
 
@@ -19,7 +28,8 @@ const NODE_COLORS: Record<string, string> = {
 
 function renderReport(text: string) {
   if (!text) return ""
-  return text
+  const safe = sanitizeHtml(text)
+  return safe
     .replace(/### (.+)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n\n/g, '</p><p class="mb-3 leading-relaxed">')

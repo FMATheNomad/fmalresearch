@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import httpx
 from app.core.config import get_settings
 
@@ -30,7 +31,7 @@ async def index_source(url: str, title: str, content: str, session_id: str, qual
                 "content": content[:20000],
                 "session_id": session_id,
                 "quality_score": quality_score,
-                "crawled_at": __import__("datetime").datetime.utcnow().isoformat(),
+                "crawled_at": datetime.now(timezone.utc).isoformat(),
             }
             await client.post(
                 f"{settings.meilisearch_url}/indexes/sources/documents",

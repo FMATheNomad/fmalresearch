@@ -118,6 +118,8 @@ async def start_research(session_id: str):
                             quality = min(len(result["content"]) / 500, 100)
                             await _index_source(db, session.id, result["url"],
                                                 result.get("title", ""), result["content"][:20000], quality)
+
+                    await db.commit()
                 else:
                     if not msg.content and not tool_calls:
                         logger.info("orchestrator_still_thinking", round=round_num)

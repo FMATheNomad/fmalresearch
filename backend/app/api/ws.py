@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.logging import get_logger
 
@@ -75,7 +76,7 @@ async def notify_tool_call(session_id: str, tool_name: str, status: str, data: d
         "tool": tool_name,
         "status": status,
         "data": data,
-        "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     })
 
 
