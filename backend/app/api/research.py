@@ -11,10 +11,10 @@ from app.services.orchestrator import start_research, COST_PER_INPUT_TOKEN, COST
 router = APIRouter(prefix="/research", tags=["research"])
 
 MODE_ESTIMATES = {
-    "fast": {"cost": 0.20, "duration": 3},
-    "balanced": {"cost": 1.00, "duration": 10},
-    "scientist": {"cost": 5.00, "duration": 45},
-    "multi_agent": {"cost": 20.00, "duration": 90},
+    "fast": {"cost": 0.05, "duration": 3},
+    "balanced": {"cost": 0.25, "duration": 10},
+    "scientist": {"cost": 3.00, "duration": 45},
+    "multi_agent": {"cost": 10.00, "duration": 90},
 }
 
 
