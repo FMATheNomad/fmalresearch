@@ -46,6 +46,7 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
         name=req.name,
         hashed_password=hash_password(req.password),
         verification_token=verification_token,
+        balance=5.00,
     )
     db.add(user)
     await db.commit()
