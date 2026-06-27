@@ -15,7 +15,7 @@ const MODE_INFO: Record<string, { label: string; cost: number; duration: string;
   fast: { label: "Fast", cost: 0.05, duration: "1-3 min", color: "bg-green-100 text-green-800" },
   balanced: { label: "Balanced", cost: 0.25, duration: "5-10 min", color: "bg-blue-100 text-blue-800" },
   scientist: { label: "Scientist", cost: 3.00, duration: "15-60 min", color: "bg-purple-100 text-purple-800" },
-  multi_agent: { label: "Multi-Agent", cost: 10.00, duration: "30-120 min", color: "bg-orange-100 text-orange-800" },
+  multi_agent: { label: "Parallel Sub-Agent", cost: 3.00, duration: "30-120 min", color: "bg-orange-100 text-orange-800" },
 }
 
 export default function DashboardPage() {

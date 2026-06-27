@@ -1,13 +1,12 @@
 import json
-import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.models.research import ResearchSession
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from app.core.logging import get_logger
 
+logger = get_logger("ws")
 router = APIRouter()
 
 active_connections: dict[str, list[WebSocket]] = {}
+research_controls: dict[str, dict] = {}
 
 
 @router.websocket("/ws/research/{session_id}")
@@ -27,11 +26,12 @@ async def research_websocket(websocket: WebSocket, session_id: str):
             if msg_type == "ping":
                 await websocket.send_json({"type": "pong"})
 
-            elif msg_type == "pause":
-                await broadcast(session_id, {"type": "status", "status": "paused"})
-
-            elif msg_type == "resume":
-                await broadcast(session_id, {"type": "status", "status": "running"})
+            elif msg_type in ("pause", "resume", "cancel", "redirect"):
+                if session_id not in research_controls:
+                    research_controls[session_id] = {}
+                research_controls[session_id][msg_type] = msg.get("value", True)
+                await broadcast(session_id, {"type": "status", "status": msg_type, "value": msg.get("value", "")})
+                logger.info("research_control", session_id=session_id, action=msg_type)
 
     except WebSocketDisconnect:
         if session_id in active_connections:
@@ -53,6 +53,22 @@ async def broadcast(session_id: str, message: dict):
         active_connections[session_id].remove(ws)
 
 
+async def check_control(session_id: str) -> str | None:
+    controls = research_controls.get(session_id)
+    if not controls:
+        return None
+    if controls.get("cancel"):
+        return "cancelled"
+    if controls.get("pause"):
+        return "paused"
+    return None
+
+
+async def clear_control(session_id: str, action: str):
+    if session_id in research_controls:
+        research_controls[session_id].pop(action, None)
+
+
 async def notify_tool_call(session_id: str, tool_name: str, status: str, data: dict | None = None):
     await broadcast(session_id, {
         "type": "tool_call",
@@ -64,13 +80,8 @@ async def notify_tool_call(session_id: str, tool_name: str, status: str, data: d
 
 
 async def notify_report_chunk(session_id: str, chunk: str):
-    await broadcast(session_id, {
-        "type": "report_chunk",
-        "content": chunk,
-    })
+    await broadcast(session_id, {"type": "report_chunk", "content": chunk})
 
 
 async def notify_complete(session_id: str):
-    await broadcast(session_id, {
-        "type": "complete",
-    })
+    await broadcast(session_id, {"type": "complete"})

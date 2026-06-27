@@ -1,4 +1,5 @@
 import json
+import asyncio
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import async_session
@@ -6,7 +7,7 @@ from app.core.logging import get_logger
 from app.models.research import ResearchSession, Source, Claim
 from app.services.deepseek import chat_completion, get_system_prompt, MODE_CONFIGS
 from app.tools import TOOL_REGISTRY
-from app.api.ws import notify_tool_call, notify_report_chunk, notify_complete
+from app.api.ws import notify_tool_call, notify_report_chunk, notify_complete, check_control, clear_control
 
 logger = get_logger("orchestrator")
 
@@ -24,6 +25,11 @@ async def start_research(session_id: str):
             session.status = "running"
             await db.commit()
 
+            if session.mode == "multi_agent":
+                from app.services.sub_agents import run_parallel_sub_agents
+                await run_parallel_sub_agents(session_id, session.query, session.user_id)
+                return
+
             messages = [
                 {"role": "system", "content": get_system_prompt(getattr(session, "domain", "general"))},
                 {"role": "user", "content": session.query},
@@ -34,6 +40,18 @@ async def start_research(session_id: str):
             config = MODE_CONFIGS.get(session.mode, MODE_CONFIGS["balanced"])
 
             for round_num in range(max_rounds):
+                control = await check_control(session_id)
+                if control == "cancelled":
+                    session.report = "Research cancelled by user."
+                    session.status = "failed"
+                    session.completed_at = datetime.now(timezone.utc)
+                    await notify_complete(session_id)
+                    await db.commit()
+                    return
+
+                while await check_control(session_id) == "paused":
+                    await asyncio.sleep(2)
+
                 response = await chat_completion(messages, mode=session.mode, stream=False, tools_enabled=True)
 
                 msg = response.choices[0].message

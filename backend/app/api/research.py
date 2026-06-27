@@ -2,13 +2,13 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models.user import User
 from app.models.research import ResearchSession, Claim
 from app.schemas.research import ResearchRequest, ResearchResponse, ResearchResult
-from app.services.orchestrator import start_research, COST_PER_INPUT_TOKEN, COST_PER_OUTPUT_TOKEN, MODE_CONFIGS
+from app.services.orchestrator import start_research
 
 router = APIRouter(prefix="/research", tags=["research"])
 
@@ -16,7 +16,7 @@ MODE_ESTIMATES = {
     "fast": {"cost": 0.05, "duration": 3},
     "balanced": {"cost": 0.25, "duration": 10},
     "scientist": {"cost": 3.00, "duration": 45},
-    "multi_agent": {"cost": 10.00, "duration": 90},
+    "multi_agent": {"cost": 3.00, "duration": 90},
 }
 
 
@@ -112,6 +112,75 @@ async def list_research(
         )
         for s in sessions
     ]
+
+
+@router.get("/search")
+async def search_research(
+    q: str = "",
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(ResearchSession)
+        .where(ResearchSession.user_id == user.id)
+        .order_by(ResearchSession.created_at.desc())
+        .limit(50)
+    )
+    sessions = result.scalars().all()
+    if q:
+        q = q.lower()
+        sessions = [s for s in sessions if q in s.query.lower() or (s.report and q in s.report.lower())]
+    return [
+        ResearchResult(
+            id=s.id, query=s.query, status=s.status, report=s.report[:200] if s.report else None,
+            sources_count=s.sources_count, cost_incurred=s.cost_incurred,
+        )
+        for s in sessions[:20]
+    ]
+
+
+@router.post("/{session_id}/continue")
+async def continue_research(
+    session_id: str,
+    req: ResearchRequest,
+    bg_tasks: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    original = await db.get(ResearchSession, session_id)
+    if not original or original.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Research session not found")
+
+    new_query = f"{original.query} — continued: {req.query}" if req.query else original.query
+    estimate = MODE_ESTIMATES.get(req.mode, MODE_ESTIMATES["balanced"])
+
+    if user.balance < estimate["cost"]:
+        raise HTTPException(status_code=402, detail="Insufficient balance")
+
+    session = ResearchSession(
+        user_id=user.id,
+        query=new_query,
+        mode=req.mode,
+        domain=getattr(original, "domain", "general"),
+        budget_cap=estimate["cost"] * 10,
+    )
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    user.balance -= estimate["cost"]
+    await db.commit()
+
+    bg_tasks.add_task(start_research, session.id)
+
+    return ResearchResponse(
+        id=session.id,
+        query=session.query,
+        mode=session.mode,
+        status=session.status,
+        cost_estimate=estimate["cost"],
+        estimated_duration_minutes=estimate["duration"],
+    )
 
 
 @router.get("/{session_id}/export")
