@@ -1,6 +1,6 @@
+import bcrypt as _bcrypt
 from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,16 +10,17 @@ from app.core.database import get_db
 from app.models.user import User
 
 settings = get_settings()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    pw = password.encode("utf-8")[:72]
+    salt = _bcrypt.gensalt()
+    return _bcrypt.hashpw(pw, salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return _bcrypt.checkpw(plain.encode("utf-8")[:72], hashed.encode("utf-8"))
 
 
 def create_access_token(user_id: str) -> str:
