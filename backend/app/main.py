@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.database import engine, Base, migrate_database
 from app.core.logging import setup_logging, get_logger
-from app.api import auth, research, ws
+from app.api import auth, research, ws, billing
 
 settings = get_settings()
 logger = get_logger("main")
@@ -32,6 +32,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(research.router)
 app.include_router(ws.router)
+app.include_router(billing.router)
 
 
 @app.on_event("startup")

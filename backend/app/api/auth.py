@@ -9,6 +9,7 @@ from app.core.database import get_db
 from app.core.config import get_settings
 from app.core.auth import hash_password, verify_password, create_access_token, get_current_user
 from app.core.logging import get_logger
+from app.services.email import send_verification_email
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 
@@ -53,6 +54,8 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
     verify_url = f"{settings.google_redirect_uri.replace('/google/callback', '')}/auth/verify-email?token={verification_token}"
     logger.info("user_registered", user_id=user.id, verify_url=verify_url)
+
+    await send_verification_email(user.email, verify_url)
 
     return TokenResponse(access_token=create_access_token(user.id))
 
