@@ -36,7 +36,7 @@ export default function LandingPage() {
               <Button onClick={() => router.push("/dashboard")} className="bg-white/10 hover:bg-white/20 text-white border-0">Dashboard</Button>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => router.push("/login")} className="text-white/70 hover:text-white hover:bg-white/10">Login</Button>
+                <Button variant="outline" onClick={() => router.push("/login")} className="border-white/30 text-white hover:text-white hover:bg-white/10 hover:border-white/50">Login</Button>
                 <Button onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25">Mulai Gratis</Button>
               </>
             )}
@@ -71,12 +71,40 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white px-8 shadow-lg shadow-blue-500/25 text-base h-12">
                 Mulai Gratis — $5 Kredit
               </Button>
-              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 px-8 text-base h-12">
+              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-white/30 text-white hover:text-white hover:bg-white/10 px-8 text-base h-12">
                 Login
               </Button>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-left">
+            <div className="mt-8 max-w-2xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-left">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4 text-blue-400" />Kalkulator Pemakaian</h3>
+              <p className="text-xs text-white/40 mb-4">Dengan $5 kredit gratis, kamu bisa mendapatkan kurang lebih:</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
+                  <div className="text-2xl font-bold text-blue-400">50</div>
+                  <div className="text-xs text-white/40 mt-1">Fast Research</div>
+                  <div className="text-[10px] text-white/20">1-3 menit</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
+                  <div className="text-2xl font-bold text-purple-400">8</div>
+                  <div className="text-xs text-white/40 mt-1">Balanced</div>
+                  <div className="text-[10px] text-white/20">5-10 menit</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
+                  <div className="text-2xl font-bold text-emerald-400">1</div>
+                  <div className="text-xs text-white/40 mt-1">Scientist Mode</div>
+                  <div className="text-[10px] text-white/20">15-60 menit</div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
+                  <div className="text-2xl font-bold text-amber-400">$0.10</div>
+                  <div className="text-xs text-white/40 mt-1">Termurah</div>
+                  <div className="text-[10px] text-white/20">per riset</div>
+                </div>
+              </div>
+              <p className="text-xs text-white/30 mt-4 text-center">Tidak ada kuota bulanan. Tidak ada biaya tersembunyi. Bayar sesuai pemakaian.</p>
+            </div>
+
+            <div className="max-w-4xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-left mt-8">
               <div className="flex items-center gap-2 text-sm text-white/40 mb-3">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                 <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
