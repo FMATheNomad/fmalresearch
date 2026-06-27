@@ -195,8 +195,13 @@ export default function ResearchDetailPage() {
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm">Export</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">Copy Text</Button>
-              <Button variant="outline" size="sm" className="w-full">Download MD</Button>
+              <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                if (session.report) { navigator.clipboard.writeText(session.report) }
+              }}>Copy Text</Button>
+              <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                const url = `${window.location.origin}/research/${id}/export`
+                window.open(url, "_blank")
+              }}>Download MD</Button>
             </CardContent>
           </Card>
         </aside>
