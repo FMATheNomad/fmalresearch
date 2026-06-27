@@ -16,15 +16,22 @@ settings = get_settings()
 logger = get_logger("auth")
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-oauth = OAuth(StarletteConfig(environ={
-    "GOOGLE_CLIENT_ID": settings.google_client_id,
-    "GOOGLE_CLIENT_SECRET": settings.google_client_secret,
-}))
-google = oauth.register(
-    name="google",
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
-)
+_google_oauth = None
+
+
+def get_google_oauth():
+    global _google_oauth
+    if _google_oauth is None and settings.google_client_id:
+        oauth = OAuth(StarletteConfig(environ={
+            "GOOGLE_CLIENT_ID": settings.google_client_id,
+            "GOOGLE_CLIENT_SECRET": settings.google_client_secret,
+        }))
+        _google_oauth = oauth.register(
+            name="google",
+            server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+            client_kwargs={"scope": "openid email profile"},
+        )
+    return _google_oauth
 
 
 @router.post("/register", response_model=TokenResponse)
@@ -76,12 +83,18 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 @router.get("/google/login")
 async def google_login(request: Request):
+    google = get_google_oauth()
+    if not google:
+        raise HTTPException(status_code=501, detail="Google OAuth not configured")
     redirect_uri = settings.google_redirect_uri
     return await google.authorize_redirect(request, redirect_uri)
 
 
 @router.get("/google/callback")
 async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
+    google = get_google_oauth()
+    if not google:
+        raise HTTPException(status_code=501, detail="Google OAuth not configured")
     try:
         token = await google.authorize_access_token(request)
     except Exception as e:

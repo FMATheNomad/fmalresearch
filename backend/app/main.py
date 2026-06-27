@@ -2,7 +2,7 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.core.database import engine, Base
+from app.core.database import engine, Base, migrate_database
 from app.core.logging import setup_logging, get_logger
 from app.api import auth, research, ws
 
@@ -37,8 +37,7 @@ app.include_router(ws.router)
 @app.on_event("startup")
 async def startup():
     logger.info("starting_database_migration")
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await migrate_database()
     logger.info("database_migration_complete")
 
 
