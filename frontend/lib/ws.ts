@@ -1,4 +1,10 @@
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+function getWsBase(): string {
+  if (typeof window === "undefined") return "ws://localhost:8000";
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${window.location.host}`;
+}
+
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || getWsBase();
 
 type MessageHandler = (data: any) => void;
 

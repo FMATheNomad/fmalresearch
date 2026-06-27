@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# Install Node.js for frontend
+# Install Node.js + nginx for frontend serving and reverse proxy
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl ca-certificates gnupg \
+    curl ca-certificates gnupg nginx \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
@@ -23,12 +23,13 @@ RUN npm run build && cp -r .next/standalone /app/frontend \
     && cp -r .next/static /app/frontend/.next/static \
     && rm -rf /app/build-frontend
 
-# Copy start script
+# Copy nginx config + start script
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/start.sh /start.sh
 RUN chmod +x /start.sh
 
 WORKDIR /app
 
-EXPOSE 3000 8000
+EXPOSE 8000
 
 CMD ["/start.sh"]
