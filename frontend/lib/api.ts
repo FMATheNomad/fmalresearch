@@ -44,7 +44,7 @@ export const api = {
       request<{
         id: string; query: string; mode: string; status: string;
         cost_estimate: number; estimated_duration_minutes: number;
-      }>("/research/", { method: "POST", body: JSON.stringify(data) }),
+      }>("/research", { method: "POST", body: JSON.stringify(data) }),
     get: (id: string) =>
       request<{
         id: string; query: string; status: string; report?: string;
@@ -52,6 +52,6 @@ export const api = {
         confidence_scores?: Record<string, any>; research_graph?: any;
       }>(`/research/${id}`),
     list: () =>
-      request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>("/research/"),
+      request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>("/research"),
   },
 };

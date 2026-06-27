@@ -18,7 +18,7 @@ MODE_ESTIMATES = {
 }
 
 
-@router.post("/", response_model=ResearchResponse)
+@router.post("", response_model=ResearchResponse)
 async def create_research(
     req: ResearchRequest,
     bg_tasks: BackgroundTasks,
@@ -87,7 +87,7 @@ async def get_research(
     )
 
 
-@router.get("/", response_model=list[ResearchResult])
+@router.get("", response_model=list[ResearchResult])
 async def list_research(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
