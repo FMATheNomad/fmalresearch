@@ -8,61 +8,142 @@ export default function LandingPage() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+      <header className="border-b border-white/5 backdrop-blur-sm bg-slate-950/50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-sm">FR</div>
-            <span className="font-semibold text-lg">FMA Labs Research</span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">FR</div>
+            <span className="font-semibold text-base">FMA Labs Research</span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             {token ? (
-              <Button onClick={() => router.push("/dashboard")}>Dashboard</Button>
+              <Button onClick={() => router.push("/dashboard")} className="bg-white/10 hover:bg-white/20 text-white border-0">Dashboard</Button>
             ) : (
               <>
-                <Button variant="ghost" onClick={() => router.push("/login")}>Login</Button>
-                <Button onClick={() => router.push("/register")}>Sign Up</Button>
+                <Button variant="ghost" onClick={() => router.push("/login")} className="text-white/70 hover:text-white hover:bg-white/5">Login</Button>
+                <Button onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25">Mulai Gratis</Button>
               </>
             )}
           </div>
         </div>
       </header>
 
-      <main className="flex-1">
-        <section className="max-w-6xl mx-auto px-4 py-24 text-center">
-          <h1 className="text-5xl font-bold tracking-tight mb-6">
-            Research You Can <span className="text-primary">Trace</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Satu-satunya AI Deep Researcher dengan proses transparan, verifikasi multi-source,
-            dan pricing bayar sesuai pemakaian. Bukan black box.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => router.push("/register")}>Mulai Gratis</Button>
-            <Button size="lg" variant="outline" onClick={() => router.push("/login")}>Masuk</Button>
+      <main>
+        <section className="max-w-6xl mx-auto px-4 pt-32 pb-24 text-center relative">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
+          </div>
+
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 mb-8">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse-dot" />
+              AI Deep Research — Open Beta
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+              Research You Can<br />
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Trace</span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 leading-relaxed">
+              AI Deep Research dengan proses transparan — lihat setiap langkah AI, 
+              verifikasi setiap klaim, bayar sesuai pemakaian. Bukan black box.
+            </p>
+
+            <div className="flex gap-4 justify-center mb-16">
+              <Button size="lg" onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white px-8 shadow-lg shadow-blue-500/25 text-base">
+                Mulai Gratis — $5 Kredit
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-white/10 text-white/70 hover:text-white hover:bg-white/5 px-8 text-base">
+                Login
+              </Button>
+            </div>
+
+            <div className="max-w-3xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-left">
+              <div className="flex items-center gap-2 text-sm text-white/40 mb-4">
+                <span className="w-2 h-2 rounded-full bg-red-400" />
+                <span className="w-2 h-2 rounded-full bg-yellow-400" />
+                <span className="w-2 h-2 rounded-full bg-green-400" />
+                <span className="ml-2 text-xs">research — demo output</span>
+              </div>
+              <div className="space-y-3 text-sm font-mono text-white/60">
+                <p><span className="text-blue-400">🔍 search</span> <span className="text-white/40">Kecerdasan buatan Indonesia 2026</span> <span className="text-green-400">→ 15 sources</span></p>
+                <p><span className="text-blue-400">🔍 search</span> <span className="text-white/40">AI startup Indonesia funding 2026</span> <span className="text-green-400">→ 12 sources</span></p>
+                <p><span className="text-green-400">📄 fetch</span> <span className="text-white/40">id.wikipedia.org/wiki/Kecerdasan_buatan</span> <span className="text-green-400">✓</span></p>
+                <p><span className="text-green-400">📄 fetch</span> <span className="text-white/40">techinasia.com/indonesia-ai-startups</span> <span className="text-green-400">✓</span></p>
+                <p><span className="text-purple-400">✅ verify</span> <span className="text-white/40">"Indonesia AI market grew 40% in 2025"</span> <span className="text-yellow-400">confidence 92%</span></p>
+                <p><span className="text-purple-400">✅ verify</span> <span className="text-white/40">"10 AI startups raised $500M+ in 2025"</span> <span className="text-red-400">conflict detected</span></p>
+                <p className="text-white/80 pt-2 border-t border-white/5">📋 Research report generated in 45s · 27 sources · <span className="text-green-400">$0.02 cost</span></p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="border-t py-20">
-          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4 text-blue-600 text-xl">✓</div>
-              <h3 className="font-semibold mb-2">Verification Engine</h3>
-              <p className="text-sm text-muted-foreground">Cross-reference multi-source dengan confidence score per klaim</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4 text-blue-600 text-xl">◉</div>
-              <h3 className="font-semibold mb-2">Live Research Graph</h3>
-              <p className="text-sm text-muted-foreground">Lihat setiap langkah AI real-time — dari keyword hingga verifikasi</p>
-            </div>
-            <div className="text-center p-6">
-              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4 text-blue-600 text-xl">$</div>
-              <h3 className="font-semibold mb-2">Metered Pricing</h3>
-              <p className="text-sm text-muted-foreground">Bayar sesuai pemakaian. Tidak ada kuota absurd. Transparan.</p>
+        <section className="border-t border-white/5 py-24">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-16">Kenapa Bukan AI Lain?</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { icon: "✓", title: "Verification Engine", desc: "Setiap klaim diverifikasi cross-reference dari multiple source. Confidence score per paragraf. Bukan sekedar teks.", color: "from-blue-500 to-cyan-500" },
+                { icon: "◉", title: "Live Research Graph", desc: "Lihat setiap langkah AI — keyword, search, crawl, verify — semua real-time. Bukan loading spinner.", color: "from-purple-500 to-pink-500" },
+                { icon: "$", title: "Metered Pricing", desc: "Bayar sesuai pemakaian. $0.10 per riset cepat. Hard budget cap. Tidak ada kuota absurd.", color: "from-emerald-500 to-teal-500" },
+              ].map((f, i) => (
+                <div key={i} className="group relative p-6 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-colors">
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center text-white font-bold text-sm mb-4`}>{f.icon}</div>
+                  <h3 className="font-semibold text-base mb-2">{f.title}</h3>
+                  <p className="text-sm text-white/50 leading-relaxed">{f.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
+
+        <section className="border-t border-white/5 py-24">
+          <div className="max-w-6xl mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-6">Tidak Seperti Kompetitor</h2>
+            <p className="text-white/50 text-center max-w-xl mx-auto mb-12">Kami bukan sekadar chatbot dengan search. Kami adalah research infrastructure.</p>
+            <div className="max-w-3xl mx-auto space-y-3">
+              {[
+                ["Live Research Graph", "❌", "❌", "❌", "✅"],
+                ["Verification Engine", "⚠️", "⚠️", "❌", "✅"],
+                ["Metered Pricing", "❌", "❌", "❌", "✅"],
+                ["Citation Health", "❌", "⚠️", "❌", "✅"],
+                ["Real-time Intervention", "❌", "❌", "❌", "✅"],
+              ].map(([feature, chatgpt, perplexity, gemini, ours], i) => (
+                <div key={i} className="flex items-center gap-4 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/[0.04] text-sm">
+                  <span className="w-40 font-medium">{feature}</span>
+                  <span className="w-12 text-center">{chatgpt}</span>
+                  <span className="w-12 text-center">{perplexity}</span>
+                  <span className="w-12 text-center">{gemini}</span>
+                  <span className="w-12 text-center text-green-400 font-bold">{ours}</span>
+                </div>
+              ))}
+              <div className="flex text-xs text-white/30 mt-2 px-4">
+                <span className="w-40" />
+                <span className="w-12 text-center">ChatGPT</span>
+                <span className="w-12 text-center">Perplexity</span>
+                <span className="w-12 text-center">Gemini</span>
+                <span className="w-12 text-center">Kami</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-white/5 py-24 text-center">
+          <div className="max-w-xl mx-auto px-4">
+            <h2 className="text-3xl font-bold mb-4">Siap Mencoba?</h2>
+            <p className="text-white/50 mb-8">Daftar sekarang, dapatkan $5 kredit gratis untuk 25+ riset cepat.</p>
+            <Button size="lg" onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white px-10 shadow-lg shadow-blue-500/25 text-base">
+              Mulai Gratis
+            </Button>
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-white/5 py-8 text-center text-sm text-white/30">
+        <p>FMA Labs Research — bagian dari FMA Software Labs</p>
+      </footer>
     </div>
   )
 }
