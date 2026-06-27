@@ -43,6 +43,20 @@ async def start_research(session_id: str):
                     session.token_input += response.usage.prompt_tokens or 0
                     session.token_output += response.usage.completion_tokens or 0
 
+                current_cost = (
+                    session.token_input * COST_PER_INPUT_TOKEN
+                    + session.token_output * COST_PER_OUTPUT_TOKEN
+                )
+                if session.budget_cap and current_cost > session.budget_cap:
+                    logger.info("budget_cap_reached", session_id=session_id, cost=current_cost, cap=session.budget_cap)
+                    session.report = msg.content or f"Research stopped — budget cap of ${session.budget_cap:.2f} reached."
+                    session.status = "completed"
+                    session.completed_at = datetime.now(timezone.utc)
+                    session.cost_incurred = current_cost
+                    await notify_complete(session_id)
+                    await db.commit()
+                    return
+
                 assistant_msg = {
                     "role": "assistant",
                     "content": msg.content or "",
