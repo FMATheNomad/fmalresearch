@@ -2,9 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.database import engine, Base
+from app.core.logging import setup_logging, get_logger
 from app.api import auth, research, ws
 
 settings = get_settings()
+logger = get_logger("main")
+
+setup_logging(settings.environment)
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 
@@ -23,8 +27,10 @@ app.include_router(ws.router)
 
 @app.on_event("startup")
 async def startup():
+    logger.info("starting_database_migration")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    logger.info("database_migration_complete")
 
 
 @app.get("/health")

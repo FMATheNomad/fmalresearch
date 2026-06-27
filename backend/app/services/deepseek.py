@@ -114,6 +114,23 @@ def get_tool_definitions() -> list[dict]:
         {
             "type": "function",
             "function": {
+                "name": "search_academic",
+                "description": "Search academic papers via Semantic Scholar. Returns papers with title, abstract, authors, year, citations.",
+                "strict": True,
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search query for academic papers"},
+                        "limit": {"type": "integer", "description": "Maximum results", "minimum": 1, "maximum": 50}
+                    },
+                    "required": ["query"],
+                    "additionalProperties": False
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
                 "name": "verify_claim",
                 "description": "Verify a claim against multiple sources. Returns confidence score and conflicting claims.",
                 "strict": True,
@@ -166,15 +183,17 @@ SYSTEM_PROMPT = """You are FMA Labs Research, an AI deep research assistant.
 Your workflow:
 1. Understand the user's research query
 2. Search the web via search_searxng (multiple queries for comprehensive coverage)
-3. Check cache first via search_cache to avoid re-fetching
-4. Fetch content from relevant URLs via fetch_content
-5. Rerank documents via rerank_documents to prioritize relevance
-6. Verify key claims via verify_claim (cross-reference multiple sources)
-7. Synthesize findings into a structured report
+3. For academic/scientific topics, use search_academic to search scholarly papers
+4. Check cache first via search_cache to avoid re-fetching
+5. Fetch content from relevant URLs via fetch_content
+6. Rerank documents via rerank_documents to prioritize relevance
+7. Verify key claims via verify_claim (cross-reference multiple sources)
+8. Synthesize findings into a structured report
 
 Rules:
 - Always think step by step before calling tools
 - Use multiple search queries to cover different angles
+- For research questions, prioritize academic sources via search_academic
 - Verify every important claim against at least 2-3 sources
 - Output confidence scores (0.0-1.0) for each key claim
 - If sources disagree, highlight the conflicting claims
@@ -186,7 +205,7 @@ Output format for final report:
 - Executive summary (2-3 paragraphs)
 - Key findings with confidence scores
 - Detailed analysis per subtopic
-- Sources cited
+- Sources cited (include academic papers where relevant)
 - Conflicting claims (if any)
 - Methodology (engines used, sources crawled)"""
 

@@ -1,14 +1,14 @@
 import json
-import logging
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import async_session
+from app.core.logging import get_logger
 from app.models.research import ResearchSession, Source, Claim
 from app.services.deepseek import chat_completion, SYSTEM_PROMPT, MODE_CONFIGS
 from app.tools import TOOL_REGISTRY
 from app.api.ws import notify_tool_call, notify_report_chunk, notify_complete
 
-logger = logging.getLogger(__name__)
+logger = get_logger("orchestrator")
 
 COST_PER_INPUT_TOKEN = 0.14 / 1_000_000
 COST_PER_OUTPUT_TOKEN = 0.28 / 1_000_000
@@ -107,7 +107,7 @@ async def start_research(session_id: str):
             await db.commit()
 
         except Exception as e:
-            logger.exception(f"Research {session_id} failed")
+            logger.error("research_failed", session_id=session_id, error=str(e))
             session.status = "failed"
             session.error = str(e)
             await db.commit()
@@ -142,6 +142,14 @@ async def execute_tool(tool_name: str, arguments: dict, session_id: str, db: Asy
             result = await func(documents=docs, query=arguments.get("query", ""))
             return {"results": [{"id": d.get("id"), "title": d.get("title"),
                                  "relevance_score": d.get("relevance_score", 0)} for d in result[:20]]}
+
+        elif tool_name == "search_academic":
+            results = await func(arguments.get("query", ""), arguments.get("limit", 10))
+            for r in results:
+                db.add(Source(session_id=session_id, url=r["url"], title=r["title"],
+                              quality_score=min(r.get("citation_count", 0) * 5, 95)))
+            await db.commit()
+            return {"results": results[:10]}
 
         elif tool_name == "verify_claim":
             result = await func(arguments.get("claim", ""), arguments.get("sources", []))
