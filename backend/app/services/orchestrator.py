@@ -29,7 +29,7 @@ async def start_research(session_id: str):
                 {"role": "user", "content": session.query},
             ]
 
-            max_tool_rounds = {"fast": 5, "balanced": 15, "scientist": 30, "multi_agent": 50}
+            max_tool_rounds = {"fast": 10, "balanced": 20, "scientist": 40, "multi_agent": 60}
             max_rounds = max_tool_rounds.get(session.mode, 15)
             config = MODE_CONFIGS.get(session.mode, MODE_CONFIGS["balanced"])
 
@@ -48,6 +48,8 @@ async def start_research(session_id: str):
                     "content": msg.content or "",
                     "reasoning_content": getattr(msg, "reasoning_content", None),
                 }
+
+                logger.info("orchestrator_round", round=round_num, has_content=bool(msg.content), has_tool_calls=bool(tool_calls), has_reasoning=bool(getattr(msg, "reasoning_content", None)))
 
                 if tool_calls:
                     tc_list = []
@@ -85,6 +87,11 @@ async def start_research(session_id: str):
                             await _index_source(db, session.id, result["url"],
                                                 result.get("title", ""), result["content"][:20000], quality)
                 else:
+                    if not msg.content and not tool_calls:
+                        logger.info("orchestrator_still_thinking", round=round_num)
+                        messages.append(assistant_msg)
+                        continue
+
                     messages.append(assistant_msg)
                     session.report = msg.content
                     session.status = "completed"
