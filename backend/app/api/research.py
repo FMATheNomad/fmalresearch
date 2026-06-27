@@ -36,6 +36,7 @@ async def create_research(
         user_id=user.id,
         query=req.query,
         mode=req.mode,
+        domain=req.domain or "general",
         budget_cap=req.budget_cap or estimate["cost"] * 10,
     )
     db.add(session)

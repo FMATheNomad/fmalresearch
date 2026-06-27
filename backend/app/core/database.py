@@ -40,4 +40,12 @@ async def migrate_database():
                 sync_conn.execute(text("ALTER TABLE users ADD COLUMN verification_token VARCHAR"))
                 logger.info("added_column", column="verification_token")
 
+        def add_research_columns(sync_conn):
+            inspector = inspect(sync_conn)
+            columns = [c["name"] for c in inspector.get_columns("research_sessions")]
+            if "domain" not in columns:
+                sync_conn.execute(text("ALTER TABLE research_sessions ADD COLUMN domain VARCHAR DEFAULT 'general'"))
+                logger.info("added_column", column="research_sessions.domain")
+
+        await conn.run_sync(add_research_columns)
         await conn.run_sync(add_missing_columns)

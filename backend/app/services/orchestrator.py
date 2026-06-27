@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import async_session
 from app.core.logging import get_logger
 from app.models.research import ResearchSession, Source, Claim
-from app.services.deepseek import chat_completion, SYSTEM_PROMPT, MODE_CONFIGS
+from app.services.deepseek import chat_completion, get_system_prompt, MODE_CONFIGS
 from app.tools import TOOL_REGISTRY
 from app.api.ws import notify_tool_call, notify_report_chunk, notify_complete
 
@@ -25,7 +25,7 @@ async def start_research(session_id: str):
             await db.commit()
 
             messages = [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": get_system_prompt(getattr(session, "domain", "general"))},
                 {"role": "user", "content": session.query},
             ]
 

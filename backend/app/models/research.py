@@ -12,6 +12,7 @@ class ResearchSession(Base):
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), index=True)
     query: Mapped[str] = mapped_column(Text)
     mode: Mapped[str] = mapped_column(String)  # fast, balanced, scientist, multi_agent
+    domain: Mapped[str] = mapped_column(String, default="general")
     status: Mapped[str] = mapped_column(String, default="pending")  # pending, running, paused, completed, failed
     budget_cap: Mapped[float | None] = mapped_column(Float, nullable=True)
     cost_incurred: Mapped[float] = mapped_column(Float, default=0.0)
