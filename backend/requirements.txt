@@ -5,6 +5,7 @@ asyncpg>=0.30.0
 alembic
 python-jose[cryptography]
 bcrypt>=4.0.0
+passlib>=1.7.4
 python-multipart
 pydantic[email]
 pydantic-settings
@@ -18,5 +19,3 @@ duckduckgo_search
 beautifulsoup4
 structlog>=24.0.0
 aiosqlite
-authlib>=1.3.0
-httpx-oauth>=0.13
