@@ -10,3 +10,4 @@ dist/
 *.vsix
 *.db
 *.sqlite3
+.railway/
