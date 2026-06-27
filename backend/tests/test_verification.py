@@ -19,10 +19,10 @@ class TestVerificationEngine:
         assert len(result["conflicting"]) == 0
 
     @pytest.mark.asyncio
-    async def test_conflicting_source_lower_confidence(self):
+    async def test_conflicting_source_reduces_confidence(self):
         sources = [
-            {"url": "https://example.com/yes", "content": "AI is growing rapidly", "title": "Pro"},
-            {"url": "https://example.com/no", "content": "The stock market is declining today", "title": "Unrelated"},
+            {"url": "https://example.com/yes", "content": "AI is growing rapidly according to all reports", "title": "Pro"},
+            {"url": "https://example.com/no", "content": "The stock market is declining today with no growth", "title": "Unrelated"},
         ]
-        result = await verify_claim("AI is growing", sources)
-        assert result["confidence"] < 1.0
+        result = await verify_claim("AI is growing rapidly", sources)
+        assert result["confidence"] <= 0.5
