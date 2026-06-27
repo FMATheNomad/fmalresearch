@@ -1,3 +1,4 @@
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
@@ -9,6 +10,14 @@ settings = get_settings()
 logger = get_logger("main")
 
 setup_logging(settings.environment)
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        environment=settings.environment,
+        traces_sample_rate=0.25,
+    )
+    logger.info("sentry_initialized")
 
 app = FastAPI(title=settings.app_name, version="0.1.0")
 

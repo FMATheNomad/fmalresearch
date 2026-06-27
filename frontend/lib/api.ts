@@ -35,7 +35,9 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, password }),
       }),
-    me: () => request<{ id: string; email: string; name: string; balance: number }>("/auth/me"),
+    me: () => request<{ id: string; email: string; name: string; balance: number; email_verified?: boolean }>("/auth/me"),
+    verifyEmail: (token: string) =>
+      request<{ message: string }>(`/auth/verify-email?token=${token}`),
   },
   research: {
     create: (data: { query: string; mode: string; budget_cap?: number }) =>

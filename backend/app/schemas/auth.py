@@ -22,6 +22,7 @@ class UserResponse(BaseModel):
     email: str
     name: str
     balance: float
+    email_verified: bool = False
 
     class Config:
         from_attributes = True

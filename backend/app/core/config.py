@@ -37,6 +37,16 @@ class Settings(BaseSettings):
     max_concurrent_crawls: int = 10
     research_timeout_minutes: int = 120
 
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
+
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    from_email: str = "noreply@fmalresearch.ai"
+
     railway_service_name: Optional[str] = None
 
     class Config:
@@ -69,5 +79,9 @@ def get_settings() -> Settings:
     rail_api_url = os.environ.get("RAILWAY_PRIVATE_DOMAIN")
     if rail_api_url:
         settings.cors_origins.append(f"https://{rail_api_url}")
+
+    rail_url_str = os.environ.get("RAILWAY_STATIC_URL")
+    if rail_url_str:
+        settings.google_redirect_uri = f"https://{rail_url_str}/auth/google/callback"
 
     return settings
