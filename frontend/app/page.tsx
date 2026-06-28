@@ -260,9 +260,9 @@ export default function LandingPage() {
             <p className="text-white/50 text-center max-w-xl mx-auto mb-16">Tiga langkah sederhana untuk riset mendalam.</p>
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { icon: Globe, step: "1", title: "Masukkan Query", desc: "Tulis pertanyaan riset kamu. Pilih mode: Fast (1-3 menit) atau Scientist (15-60 menit)." },
-                { icon: Zap, step: "2", title: "AI Research", desc: "AI mencari, membaca, memverifikasi puluhan sumber secara otomatis. Kamu bisa intervensi real-time." },
-                { icon: FileText, step: "3", title: "Dapatkan Report", desc: "Laporan dengan confidence score per klaim, sumber tercantum, dan conflict detection." },
+                { icon: Globe, title: "Masukkan Query", desc: "Tulis pertanyaan riset kamu. Pilih mode: Fast (1-3 menit) atau Scientist (15-60 menit)." },
+                { icon: Zap, title: "AI Research", desc: "AI mencari, membaca, memverifikasi puluhan sumber secara otomatis. Kamu bisa intervensi real-time." },
+                { icon: FileText, title: "Dapatkan Report", desc: "Laporan dengan confidence score per klaim, sumber tercantum, dan conflict detection." },
               ].map((item, i) => {
                 const Icon = item.icon
                 return (
@@ -270,7 +270,7 @@ export default function LandingPage() {
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mx-auto mb-4">
                       <Icon className="w-6 h-6 text-blue-400" />
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center mx-auto mb-3">{item.step}</div>
+
                     <h3 className="font-semibold mb-1">{item.title}</h3>
                     <p className="text-sm text-white/50 leading-relaxed max-w-xs mx-auto">{item.desc}</p>
                   </div>
