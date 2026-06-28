@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       { source: "/auth/:path*", destination: `${BACKEND_URL}/auth/:path*` },
       { source: "/research/:path*", destination: `${BACKEND_URL}/research/:path*` },
       { source: "/ws/:path*", destination: `${BACKEND_URL}/ws/:path*` },
+      { source: "/billing/:path*", destination: `${BACKEND_URL}/billing/:path*` },
     ];
   },
 };
