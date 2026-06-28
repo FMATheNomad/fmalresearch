@@ -154,7 +154,7 @@ export default function ResearchDetailPage() {
           <span className="font-medium truncate flex-1 text-sm">{session.query}</span>
           <div className="flex items-center gap-2">
             {session.status === "completed" && session.confidence_scores && Object.keys(session.confidence_scores).length > 0 ? (
-              <ConfidenceGauge score={Object.values(session.confidence_scores).reduce((a: any, b: any) => a + b.confidence, 0) / Object.keys(session.confidence_scores).length} />
+              <ConfidenceGauge score={(Object.values(session.confidence_scores as Record<string, {confidence: number}>) || []).reduce((a: number, b) => a + (b.confidence || 0), 0) / Math.max(Object.keys(session.confidence_scores).length, 1)} />
             ) : session.status === "running" ? (
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
