@@ -21,6 +21,8 @@ function LoginContent() {
       localStorage.setItem("token", token)
       router.push("/dashboard")
     }
+    // Also check if backend set the cookie already (auto-redirect)
+    api.auth.me().then(() => router.push("/dashboard")).catch(() => {})
   }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {

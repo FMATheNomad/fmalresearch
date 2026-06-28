@@ -1,6 +1,6 @@
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from authlib.integrations.starlette_client import OAuth
@@ -9,7 +9,10 @@ from app.core.database import get_db
 from app.core.config import get_settings
 from app.core.auth import hash_password, verify_password, create_access_token, get_current_user
 from app.core.logging import get_logger
+from app.models.user import User
+from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 from app.services.email import send_verification_email
+from app.main import limiter
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 
@@ -35,8 +38,9 @@ def get_google_oauth():
     return _google_oauth
 
 
-@router.post("/register", response_model=TokenResponse)
-async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
+@router.post("/register")
+@limiter.limit("5/minute")
+async def register(req: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == req.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -59,7 +63,18 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
 
     await send_verification_email(user.email, verify_url)
 
-    return TokenResponse(access_token=create_access_token(user.id))
+    token = create_access_token(user.id)
+    resp = JSONResponse(content={"access_token": token, "token_type": "bearer"})
+    resp.set_cookie(
+        key="token",
+        value=token,
+        max_age=86400,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/",
+    )
+    return resp
 
 
 @router.get("/verify-email")
@@ -76,15 +91,28 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
     return {"message": "Email verified successfully"}
 
 
-@router.post("/login", response_model=TokenResponse)
-async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
+@router.post("/login")
+@limiter.limit("10/minute")
+async def login(req: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == req.email))
     user = result.scalar_one_or_none()
     if not user or not user.hashed_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if not verify_password(req.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    return TokenResponse(access_token=create_access_token(user.id))
+
+    token = create_access_token(user.id)
+    resp = JSONResponse(content={"access_token": token, "token_type": "bearer"})
+    resp.set_cookie(
+        key="token",
+        value=token,
+        max_age=86400,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/",
+    )
+    return resp
 
 
 @router.get("/google/login")
@@ -138,7 +166,17 @@ async def google_callback(request: Request, db: AsyncSession = Depends(get_db)):
     logger.info("google_login", user_id=user.id)
 
     frontend_url = settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
-    return RedirectResponse(url=f"{frontend_url}/dashboard?token={access_token}")
+    resp = RedirectResponse(url=f"{frontend_url}/dashboard")
+    resp.set_cookie(
+        key="token",
+        value=access_token,
+        max_age=86400,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        path="/",
+    )
+    return resp
 
 
 @router.get("/me", response_model=UserResponse)

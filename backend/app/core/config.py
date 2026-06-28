@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     polar_organization_id: str = ""
 
     sentry_dsn: str = ""
-    jwt_secret: str = "change-me-in-production"
+    jwt_secret: str = ""
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
 
@@ -75,6 +75,9 @@ def get_settings() -> Settings:
     railway_redis = os.environ.get("REDIS_URL")
     if railway_redis:
         settings.redis_url = railway_redis
+
+    if not settings.jwt_secret:
+        raise ValueError("JWT_SECRET environment variable is required. Set it before starting the application.")
 
     rail_url = os.environ.get("RAILWAY_STATIC_URL")
     if rail_url:
