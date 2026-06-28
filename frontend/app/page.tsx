@@ -1,8 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, FileText, ShieldCheck, DollarSign, GitBranch, Check, X, Minus, Sparkles, ArrowRight, ChevronRight, Globe, BookOpen, Zap, Clock, BarChart3, Users } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Search, FileText, ShieldCheck, DollarSign, GitBranch, Check, X, Minus, Sparkles, ArrowRight, Globe, BookOpen, Zap, Clock, BarChart3, Users } from "lucide-react"
 
 const features = [
   { icon: ShieldCheck, title: "Verification Engine", desc: "Setiap klaim diverifikasi dari multiple source. Confidence score per paragraf. Bukan sekadar teks — ada bukti.", color: "from-blue-500 to-cyan-500" },
@@ -22,6 +24,11 @@ const comparisons = [
 export default function LandingPage() {
   const router = useRouter()
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+  const [budget, setBudget] = useState(5)
+  const fastCount = Math.floor(budget / 0.05)
+  const balancedCount = Math.floor(budget / 0.25)
+  const scientistCount = Math.floor(budget / 3.0)
+  const parallelCount = Math.floor(budget / 3.0)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
@@ -78,27 +85,33 @@ export default function LandingPage() {
 
             <div className="mt-8 max-w-2xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-left">
               <h3 className="text-sm font-semibold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4 text-blue-400" />Kalkulator Pemakaian</h3>
-              <p className="text-xs text-white/40 mb-4">Dengan $5 kredit gratis, kamu bisa mendapatkan kurang lebih:</p>
+              <p className="text-xs text-white/40 mb-3">Masukkan budget kamu:</p>
+              <div className="flex items-center gap-3 mb-5">
+                <DollarSign className="w-4 h-4 text-blue-400 shrink-0" />
+                <Input type="range" min={1} max={100} value={budget} onChange={(e) => setBudget(Number(e.target.value))}
+                  className="w-full accent-blue-500 bg-slate-800 h-1.5 rounded-full appearance-none cursor-pointer" />
+                <span className="text-lg font-bold text-blue-400 w-16 text-right">${budget}</span>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
-                  <div className="text-2xl font-bold text-blue-400">50</div>
+                  <div className="text-2xl font-bold text-blue-400">{fastCount}</div>
                   <div className="text-xs text-white/40 mt-1">Fast Research</div>
-                  <div className="text-[10px] text-white/20">1-3 menit</div>
+                  <div className="text-[10px] text-white/20">$0.05/riset</div>
                 </div>
                 <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
-                  <div className="text-2xl font-bold text-purple-400">8</div>
+                  <div className="text-2xl font-bold text-purple-400">{balancedCount}</div>
                   <div className="text-xs text-white/40 mt-1">Balanced</div>
-                  <div className="text-[10px] text-white/20">5-10 menit</div>
+                  <div className="text-[10px] text-white/20">$0.25/riset</div>
                 </div>
                 <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
-                  <div className="text-2xl font-bold text-emerald-400">1</div>
+                  <div className="text-2xl font-bold text-emerald-400">{scientistCount}</div>
                   <div className="text-xs text-white/40 mt-1">Scientist Mode</div>
-                  <div className="text-[10px] text-white/20">15-60 menit</div>
+                  <div className="text-[10px] text-white/20">$3.00/riset</div>
                 </div>
                 <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.04] text-center">
-                  <div className="text-2xl font-bold text-amber-400">$0.10</div>
-                  <div className="text-xs text-white/40 mt-1">Termurah</div>
-                  <div className="text-[10px] text-white/20">per riset</div>
+                  <div className="text-2xl font-bold text-amber-400">{parallelCount}</div>
+                  <div className="text-xs text-white/40 mt-1">Parallel Sub-Agent</div>
+                  <div className="text-[10px] text-white/20">$3.00/riset</div>
                 </div>
               </div>
               <p className="text-xs text-white/30 mt-4 text-center">Tidak ada kuota bulanan. Tidak ada biaya tersembunyi. Bayar sesuai pemakaian.</p>
