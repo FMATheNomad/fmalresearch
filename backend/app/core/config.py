@@ -7,7 +7,7 @@ from typing import Optional
 class Settings(BaseSettings):
     app_name: str = "FMA Labs Research"
     environment: str = "development"
-    debug: bool = True
+    debug: bool = False
 
     database_url: str = "postgresql+asyncpg://localhost:5432/fmalresearch"
     redis_url: str = "redis://localhost:6379/0"
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     max_concurrent_crawls: int = 10
     research_timeout_minutes: int = 120
 
-    unlimited_access: bool = True
+    unlimited_access: bool = False
     _admin_emails: list[str] = []
 
     def get_admin_emails(self) -> list[str]:
