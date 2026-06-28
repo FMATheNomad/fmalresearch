@@ -149,6 +149,28 @@ export default function LandingPage() {
                 </p>
               </div>
             </div>
+
+            <div className="mt-8 max-w-2xl mx-auto bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+              <p className="text-xs text-white/40 mb-3 text-center">Lihat contoh hasil research:</p>
+              <a href="/research/example"
+                className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] transition-colors group">
+                <div className="relative w-12 h-12 shrink-0">
+                  <svg width="48" height="48" viewBox="0 0 48 48">
+                    <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+                    <circle cx="24" cy="24" r="18" fill="none" stroke="#34d399" strokeWidth="3"
+                      strokeDasharray="113.1" strokeDashoffset="14.7" strokeLinecap="round"
+                      transform="rotate(-90 24 24)" />
+                    <text x="24" y="24" textAnchor="middle" dominantBaseline="central"
+                      fill="#34d399" fontSize="11" fontWeight="700">87%</text>
+                  </svg>
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="text-sm font-medium text-white group-hover:text-emerald-400 transition-colors">Efek Kafein Terhadap Konsentrasi</div>
+                  <div className="text-xs text-white/40">Tinjauan literatur 2020-2024 — 12 sumber terverifikasi</div>
+                </div>
+                <span className="text-white/30 group-hover:text-white/60 transition-colors">→</span>
+              </a>
+            </div>
           </div>
         </section>
 
