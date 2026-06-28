@@ -122,9 +122,38 @@ export default function DashboardPage() {
           </div>
 
           {filtered.length === 0 ? (
-            <div className="text-center py-16 text-slate-500 text-sm">
-              <BarChart3 className="w-10 h-10 mx-auto mb-3 text-slate-700" />
-              {searchQ ? "No research matching your search." : "No research yet. Start with a query on the left."}
+            <div className="space-y-4">
+              {searchQ ? (
+                <div className="text-center py-16 text-slate-500 text-sm">
+                  <BarChart3 className="w-10 h-10 mx-auto mb-3 text-slate-700" />
+                  No research matching your search.
+                </div>
+              ) : (
+                <>
+                  <div className="text-center py-8 text-slate-500 text-sm">
+                    Belum ada research. Coba contoh di bawah atau tulis query di form sebelah kiri.
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div onClick={() => router.push("/research/example")}
+                      className="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800/50 cursor-pointer transition-all group">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm">🔬</div>
+                        <Badge variant="success" className="text-[10px]">Example</Badge>
+                      </div>
+                      <h3 className="text-sm font-medium text-white mb-1 group-hover:text-blue-400 transition-colors">Efek Kafein Terhadap Konsentrasi</h3>
+                      <p className="text-xs text-slate-500">Tinjauan literatur 2020-2024 — 12 sumber, confidence 87%</p>
+                    </div>
+                    <div onClick={() => router.push("/register")}
+                      className="p-4 rounded-xl bg-slate-900 border border-slate-800 border-dashed hover:bg-slate-800/50 cursor-pointer transition-all group">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-base">+</div>
+                      </div>
+                      <h3 className="text-sm font-medium text-white mb-1 group-hover:text-purple-400 transition-colors">Buat Research Baru</h3>
+                      <p className="text-xs text-slate-500">Daftar untuk mulai research pertamamu</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-2">

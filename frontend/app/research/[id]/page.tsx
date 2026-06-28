@@ -11,6 +11,30 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
 
+function ConfidenceGauge({ score, size = 36 }: { score: number; size?: number }) {
+  const r = (size - 8) / 2
+  const cx = size / 2
+  const cy = size / 2
+  const circumference = 2 * Math.PI * r
+  const offset = circumference - (Math.min(Math.max(score, 0), 1) * circumference)
+  const hue = score * 120
+  const stroke = `hsl(${hue}, 80%, 50%)`
+
+  return (
+    <svg width={size} height={size} className="shrink-0">
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={3} />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={stroke} strokeWidth={3}
+        strokeDasharray={circumference} strokeDashoffset={offset}
+        strokeLinecap="round" transform={`rotate(-90 ${cx} ${cy})`}
+        className="transition-all duration-700" />
+      <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
+        fill="#fff" fontSize={size > 30 ? 10 : 8} fontWeight={600}>
+        {(score * 100).toFixed(0)}%
+      </text>
+    </svg>
+  )
+}
+
 type GraphNode = { id: string; label: string; type: string; status: string }
 type GraphEdge = { source: string; target: string }
 
@@ -27,8 +51,9 @@ export default function ResearchDetailPage() {
   const [loading, setLoading] = useState(true)
   const [nodes, setNodes] = useState<GraphNode[]>([])
   const [edges, setEdges] = useState<GraphEdge[]>([])
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
   const [sources, setSources] = useState<any[]>([])
+  const [progress, setProgress] = useState<string[]>([])
   const nodesRef = useRef<GraphNode[]>([])
   const edgesRef = useRef<GraphEdge[]>([])
 
@@ -40,6 +65,18 @@ export default function ResearchDetailPage() {
 
     const steps = ["search", "fetch", "verify", "rerank", "cache"]
     let stepIdx = 0
+
+    const progressMsgs = [
+      "Searching web & academic sources...",
+      "Fetching content from sources...",
+      "Cross-referencing claims...",
+      "Reranking by relevance...",
+      "Verifying key facts...",
+      "Detecting conflicting claims...",
+      "Calculating confidence scores...",
+      "Synthesizing final report...",
+    ]
+    let progIdx = 0
 
     const poll = async () => {
       try {
@@ -59,6 +96,11 @@ export default function ResearchDetailPage() {
           if (newEdge) edgesRef.current = [...edgesRef.current, newEdge]
           setNodes([...nodesRef.current])
           if (newEdge) setEdges([...edgesRef.current])
+
+          if (stepIdx % 2 === 0) {
+            setProgress(prev => [...prev.slice(-5), `> ${progressMsgs[progIdx % progressMsgs.length]}`])
+            progIdx++
+          }
         }
 
         if (s.status === "completed") {
@@ -66,6 +108,7 @@ export default function ResearchDetailPage() {
           const completed = nodesRef.current.map(n => ({ ...n, status: "completed" }))
           nodesRef.current = completed
           setNodes([...nodesRef.current])
+          setProgress(prev => [...prev, "> ✅ Research complete!"])
         }
       } catch { setLoading(false) }
     }
@@ -109,8 +152,18 @@ export default function ResearchDetailPage() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")} className={darkMode ? "text-white" : ""}>←</Button>
           <span className="font-medium truncate flex-1 text-sm">{session.query}</span>
-          <Badge variant={session.status === "completed" ? "success" : "warning"}>{session.status === "running" ? "Researching..." : session.status}</Badge>
+          <div className="flex items-center gap-2">
+            {session.status === "completed" && session.confidence_scores && Object.keys(session.confidence_scores).length > 0 ? (
+              <ConfidenceGauge score={Object.values(session.confidence_scores).reduce((a: any, b: any) => a + b.confidence, 0) / Object.keys(session.confidence_scores).length} />
+            ) : session.status === "running" ? (
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                <span className="text-[10px] text-blue-400 font-mono">Researching</span>
+              </div>
+            ) : null}
+          </div>
           <span className={`text-xs ${muted}`}>${session.cost_incurred?.toFixed(4)}</span>
+          <span className={`text-[10px] ${muted}`}>{session.sources_count} src</span>
           <Button variant="ghost" size="sm" onClick={() => setDarkMode(!darkMode)} className={darkMode ? "text-white" : ""}>{darkMode ? "☀️" : "🌙"}</Button>
         </div>
       </header>
@@ -119,9 +172,18 @@ export default function ResearchDetailPage() {
         <div className="flex-1 space-y-6 min-w-0">
           {session.status === "running" && (
             <Card className={cardBg}>
-              <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Live Research Graph</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Live Research</CardTitle></CardHeader>
               <CardContent>
-                <svg ref={svgRef} className="w-full border rounded-lg" style={{ height: 350, background: darkMode ? "#0f172a" : "#fff" }} />
+                <svg ref={svgRef} className="w-full border rounded-lg" style={{ height: 250, background: darkMode ? "#0f172a" : "#fff" }} />
+                <div className={`mt-3 p-3 rounded-lg text-xs font-mono ${darkMode ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600"}`}>
+                  {progress.length === 0 ? (
+                    <p className="text-slate-500">Starting research...</p>
+                  ) : (
+                    progress.slice(-6).map((m, i) => (
+                      <p key={i} className="leading-6">{m}</p>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
