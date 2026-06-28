@@ -39,6 +39,8 @@ async def start_research(session_id: str):
             max_rounds = max_tool_rounds.get(session.mode, 15)
             config = MODE_CONFIGS.get(session.mode, MODE_CONFIGS["balanced"])
 
+            source_counter = 0
+
             for round_num in range(max_rounds):
                 control = await check_control(session_id)
                 if control == "cancelled":
@@ -108,6 +110,14 @@ async def start_research(session_id: str):
                         result_str = json.dumps(result) if not isinstance(result, str) else (result or "{}")
                         await notify_tool_call(session_id, tool_name, "completed", {"result": result_str[:200]})
 
+                        if tool_name in ("search_searxng", "search_academic"):
+                            try:
+                                parsed = json.loads(result_str) if isinstance(result_str, str) else result
+                                if isinstance(parsed, dict) and "results" in parsed:
+                                    source_counter += len(parsed["results"])
+                            except Exception:
+                                pass
+
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tc.id,
@@ -134,6 +144,7 @@ async def start_research(session_id: str):
                         session.token_input * COST_PER_INPUT_TOKEN
                         + session.token_output * COST_PER_OUTPUT_TOKEN
                     )
+                    session.sources_count = source_counter
 
                     if msg.content:
                         chunks = msg.content.split("\n\n")
