@@ -1,20 +1,18 @@
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
 from app.core.config import get_settings
 from app.core.database import engine, Base, migrate_database
 from app.core.logging import setup_logging, get_logger
+from app.core.ratelimit import limiter
 from app.api import auth, research, ws, billing
 
 settings = get_settings()
 logger = get_logger("main")
 
 setup_logging(settings.environment)
-
-limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 
 if settings.sentry_dsn:
     sentry_sdk.init(

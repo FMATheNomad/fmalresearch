@@ -12,7 +12,7 @@ from app.core.logging import get_logger
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 from app.services.email import send_verification_email
-from app.main import limiter
+from app.core.ratelimit import limiter
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 
