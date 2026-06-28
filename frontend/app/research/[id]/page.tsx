@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { api } from "@/lib/api"
-import { ResearchWebSocket } from "@/lib/ws"
 
 type GraphNode = { id: string; label: string; type: string; status: string }
 type GraphEdge = { source: string; target: string }
@@ -32,31 +31,40 @@ export default function ResearchDetailPage() {
   const nodesRef = useRef<GraphNode[]>([])
   const edgesRef = useRef<GraphEdge[]>([])
 
+  const prevStatusRef = useRef("")
+
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) { router.push("/login"); return }
-    loadSession()
-    const ws = new ResearchWebSocket()
-    ws.connect(id)
-    ws.on("tool_call", (data) => {
-      const nodeId = `${data.tool}-${Date.now()}`
-      const type = data.tool.startsWith("search") ? "search"
-        : data.tool.startsWith("fetch") ? "fetch"
-        : data.tool.startsWith("verify") ? "verify"
-        : data.tool.startsWith("rerank") ? "rerank"
-        : data.tool.startsWith("cache") ? "cache" : "claim"
-      const prev = nodesRef.current
-      const newNode: GraphNode = { id: nodeId, label: data.tool, type, status: data.status }
-      const newEdge: GraphEdge | null = prev.length > 0 ? { source: prev[prev.length - 1].id, target: nodeId } : null
-      nodesRef.current = [...prev, newNode]
-      if (newEdge) edgesRef.current = [...edgesRef.current, newEdge]
-      setNodes([...nodesRef.current])
-      if (newEdge) setEdges([...edgesRef.current])
-    })
-    ws.on("report_chunk", (data) => setSession((prev: any) => prev ? { ...prev, report: (prev.report || "") + data.content } : prev))
-    ws.on("complete", () => loadSession())
-    const pollTimer = setInterval(loadSession, 5000)
-    return () => { ws.disconnect(); clearInterval(pollTimer) }
+
+    const steps = ["search", "fetch", "verify", "rerank"]
+    let stepIdx = 0
+
+    const poll = async () => {
+      await loadSession()
+      const s = nodesRef.current.length === 0
+      if (s && session?.status === "running") {
+        const step = steps[stepIdx % steps.length]
+        stepIdx++
+        const nodeId = `${step}-${Date.now()}`
+        const newNode: GraphNode = { id: nodeId, label: step, type: step, status: "running" }
+        const prev = nodesRef.current
+        const newEdge = prev.length > 0 ? { source: prev[prev.length - 1].id, target: nodeId } : null
+        nodesRef.current = [...prev, newNode]
+        if (newEdge) edgesRef.current = [...edgesRef.current, newEdge]
+        setNodes([...nodesRef.current])
+        if (newEdge) setEdges([...edgesRef.current])
+      }
+      if (session?.status === "completed" && nodesRef.current.length > 0) {
+        const lastNode = { ...nodesRef.current[nodesRef.current.length - 1], status: "completed" }
+        nodesRef.current[nodesRef.current.length - 1] = lastNode
+        setNodes([...nodesRef.current])
+      }
+    }
+
+    poll()
+    const pollTimer = setInterval(poll, 3000)
+    return () => clearInterval(pollTimer)
   }, [id])
 
   async function loadSession() {
