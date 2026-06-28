@@ -31,7 +31,7 @@ async def create_research(
 ):
     estimate = MODE_ESTIMATES.get(req.mode, MODE_ESTIMATES["balanced"])
 
-    if user.email not in settings.admin_emails and user.balance < estimate["cost"]:
+    if user.email not in settings.get_admin_emails() and user.balance < estimate["cost"]:
         raise HTTPException(status_code=402, detail="Insufficient balance. Please top up.")
 
     session = ResearchSession(
@@ -124,7 +124,7 @@ async def continue_research(
     new_query = f"{original.query} — continued: {req.query}" if req.query else original.query
     estimate = MODE_ESTIMATES.get(req.mode, MODE_ESTIMATES["balanced"])
 
-    if user.email not in settings.admin_emails and user.balance < estimate["cost"]:
+    if user.email not in settings.get_admin_emails() and user.balance < estimate["cost"]:
         raise HTTPException(status_code=402, detail="Insufficient balance")
 
     session = ResearchSession(
@@ -138,7 +138,7 @@ async def continue_research(
     await db.commit()
     await db.refresh(session)
 
-    if user.email not in settings.admin_emails:
+    if user.email not in settings.get_admin_emails():
         user.balance -= estimate["cost"]
         await db.commit()
 

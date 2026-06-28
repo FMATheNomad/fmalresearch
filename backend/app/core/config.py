@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     admin_emails: list[str] = []
     unlimited_access: bool = True
 
+    def get_admin_emails(self) -> list[str]:
+        env_val = os.environ.get("ADMIN_EMAILS", "")
+        if env_val:
+            return [e.strip() for e in env_val.split(",") if e.strip()]
+        return self.admin_emails
+
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
