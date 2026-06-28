@@ -37,14 +37,14 @@ class Settings(BaseSettings):
     max_concurrent_crawls: int = 10
     research_timeout_minutes: int = 120
 
-    admin_emails: list[str] = []
     unlimited_access: bool = True
+    _admin_emails: list[str] = []
 
     def get_admin_emails(self) -> list[str]:
         env_val = os.environ.get("ADMIN_EMAILS", "")
         if env_val:
             return [e.strip() for e in env_val.split(",") if e.strip()]
-        return self.admin_emails
+        return self._admin_emails
 
     google_client_id: str = ""
     google_client_secret: str = ""
