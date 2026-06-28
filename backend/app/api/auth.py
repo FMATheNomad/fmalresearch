@@ -41,13 +41,14 @@ async def register(req: RegisterRequest, db: AsyncSession = Depends(get_db)):
     if result.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
+    is_admin = req.email in settings.admin_emails
     verification_token = secrets.token_urlsafe(32)
     user = User(
         email=req.email,
         name=req.name,
         hashed_password=hash_password(req.password),
         verification_token=verification_token,
-        balance=5.00,
+        balance=999999 if is_admin else 5.00,
     )
     db.add(user)
     await db.commit()

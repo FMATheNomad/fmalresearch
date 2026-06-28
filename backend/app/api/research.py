@@ -4,10 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
 from app.core.auth import get_current_user
+from app.core.config import get_settings
 from app.models.user import User
 from app.models.research import ResearchSession, Claim
 from app.schemas.research import ResearchRequest, ResearchResponse, ResearchResult
 from app.services.orchestrator import start_research
+
+settings = get_settings()
 
 router = APIRouter(prefix="/research", tags=["research"])
 
@@ -28,7 +31,7 @@ async def create_research(
 ):
     estimate = MODE_ESTIMATES.get(req.mode, MODE_ESTIMATES["balanced"])
 
-    if user.balance < estimate["cost"]:
+    if user.email not in settings.admin_emails and user.balance < estimate["cost"]:
         raise HTTPException(status_code=402, detail="Insufficient balance. Please top up.")
 
     session = ResearchSession(
@@ -121,7 +124,7 @@ async def continue_research(
     new_query = f"{original.query} — continued: {req.query}" if req.query else original.query
     estimate = MODE_ESTIMATES.get(req.mode, MODE_ESTIMATES["balanced"])
 
-    if user.balance < estimate["cost"]:
+    if user.email not in settings.admin_emails and user.balance < estimate["cost"]:
         raise HTTPException(status_code=402, detail="Insufficient balance")
 
     session = ResearchSession(
@@ -135,8 +138,9 @@ async def continue_research(
     await db.commit()
     await db.refresh(session)
 
-    user.balance -= estimate["cost"]
-    await db.commit()
+    if user.email not in settings.admin_emails:
+        user.balance -= estimate["cost"]
+        await db.commit()
 
     bg_tasks.add_task(start_research, session.id)
 

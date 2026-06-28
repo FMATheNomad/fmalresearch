@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     max_concurrent_crawls: int = 10
     research_timeout_minutes: int = 120
 
+    admin_emails: list[str] = []
+    unlimited_access: bool = True
+
     google_client_id: str = ""
     google_client_secret: str = ""
     google_redirect_uri: str = "http://localhost:8000/auth/google/callback"
