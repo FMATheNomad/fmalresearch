@@ -169,9 +169,9 @@ export default function ResearchDetailPage() {
           <Card className={cardBg}>
             <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Export</CardTitle></CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" size="sm" className={`w-full ${darkMode ? "border-slate-700 text-white" : ""}`}
+              <Button variant="outline" size="sm" className={`w-full ${darkMode ? "bg-transparent border-slate-700 text-white" : "bg-white"}`}
                 onClick={() => { if (session.report) navigator.clipboard.writeText(session.report) }}>Copy Text</Button>
-              <Button variant="outline" size="sm" className={`w-full ${darkMode ? "border-slate-700 text-white" : ""}`}
+              <Button variant="outline" size="sm" className={`w-full ${darkMode ? "bg-transparent border-slate-700 text-white" : "bg-white"}`}
                 onClick={() => window.open(`/research/${id}/export`, "_blank")}>Download MD</Button>
             </CardContent>
           </Card>
