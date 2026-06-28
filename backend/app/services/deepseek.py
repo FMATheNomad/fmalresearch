@@ -210,6 +210,23 @@ Output format for final report:
 - Methodology (engines used, sources crawled)"""
 
 
+DOMAIN_PROMPTS = {
+    "general": "Focus on general web sources and provide balanced coverage.",
+    "academic": "Prioritize academic sources (Google Scholar, Semantic Scholar). Use search_academic tool extensively. Output formal academic-style report.",
+    "financial": "Focus on financial data, market reports, numerical analysis. Include market size, growth rates, projections.",
+    "legal": "Focus on legal databases, court rulings, legislation. Prioritize primary legal sources.",
+    "technical": "Focus on technical documentation, GitHub, API references. Prioritize implementation details and code examples.",
+}
+
+
+def get_system_prompt(domain: str = "general") -> str:
+    domain_instruction = DOMAIN_PROMPTS.get(domain, DOMAIN_PROMPTS["general"])
+    return f"""{SYSTEM_PROMPT}
+
+Domain-specific instructions:
+{domain_instruction}"""
+
+
 async def chat_completion(
     messages: list[dict],
     mode: str = "balanced",
