@@ -36,7 +36,7 @@ export default function LandingPage() {
               <Button onClick={() => router.push("/dashboard")} className="bg-white/10 hover:bg-white/20 text-white border-0">Dashboard</Button>
             ) : (
               <>
-                <Button variant="outline" onClick={() => router.push("/login")} className="border-white/30 text-white hover:text-white hover:bg-white/10 hover:border-white/50">Login</Button>
+                <Button variant="outline" onClick={() => router.push("/login")} className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-500">Login</Button>
                 <Button onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25">Mulai Gratis</Button>
               </>
             )}
@@ -71,7 +71,7 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white px-8 shadow-lg shadow-blue-500/25 text-base h-12">
                 Mulai Gratis — $5 Kredit
               </Button>
-              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-white/30 text-white hover:text-white hover:bg-white/10 px-8 text-base h-12">
+              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 px-8 text-base h-12">
                 Login
               </Button>
             </div>
@@ -280,7 +280,7 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => router.push("/register")} className="bg-blue-600 hover:bg-blue-500 text-white px-10 shadow-lg shadow-blue-500/25 text-base h-12">
                 Mulai Gratis
               </Button>
-              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-white/20 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/40 px-8 text-base h-12">
+              <Button size="lg" variant="outline" onClick={() => router.push("/login")} className="border-slate-600 text-slate-300 hover:text-white hover:bg-slate-800 px-8 text-base h-12">
                 Login
               </Button>
             </div>
