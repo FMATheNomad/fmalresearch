@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_PREFIX = "/api";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -13,9 +13,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${API_PREFIX}${path}`, { ...options, headers, credentials: "include" });
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem("token")
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
+        window.location.href = "/login"
+      }
+    }
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || "Request failed");
   }
@@ -23,35 +29,39 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return res.json();
 }
 
+function setToken(token: string) {
+  localStorage.setItem("token", token)
+}
+
 export const api = {
   auth: {
-    register: (email: string, name: string, password: string) =>
-      request<{ access_token: string }>("/auth/register", {
-        method: "POST",
-        body: JSON.stringify({ email, name, password }),
-      }),
-    login: (email: string, password: string) =>
-      request<{ access_token: string }>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      }),
+    register: async (email: string, name: string, password: string) => {
+      const data = await request<{ access_token: string }>("/auth/register", {
+        method: "POST", body: JSON.stringify({ email, name, password }),
+      })
+      setToken(data.access_token)
+      return data
+    },
+    login: async (email: string, password: string) => {
+      const data = await request<{ access_token: string }>("/auth/login", {
+        method: "POST", body: JSON.stringify({ email, password }),
+      })
+      setToken(data.access_token)
+      return data
+    },
     me: () => request<{ id: string; email: string; name: string; balance: number; email_verified?: boolean }>("/auth/me"),
-    verifyEmail: (token: string) =>
-      request<{ message: string }>(`/auth/verify-email?token=${token}`),
+    verifyEmail: (token: string) => request<{ message: string }>(`/auth/verify-email?token=${token}`),
   },
   research: {
     create: (data: { query: string; mode: string; budget_cap?: number }) =>
-      request<{
-        id: string; query: string; mode: string; status: string;
-        cost_estimate: number; estimated_duration_minutes: number;
-      }>("/research", { method: "POST", body: JSON.stringify(data) }),
+      request<{ id: string; query: string; mode: string; status: string; cost_estimate: number; estimated_duration_minutes: number }>(
+        "/research", { method: "POST", body: JSON.stringify(data) }),
     get: (id: string) =>
-      request<{
-        id: string; query: string; status: string; report?: string;
-        sources_count: number; cost_incurred: number;
-        confidence_scores?: Record<string, any>; research_graph?: any;
-      }>(`/research/${id}`),
+      request<{ id: string; query: string; status: string; report?: string; sources_count: number; cost_incurred: number; confidence_scores?: any; research_graph?: any }>(
+        `/research/${id}`),
     list: () =>
       request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>("/research"),
+    search: (q: string) =>
+      request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>(`/research/search?q=${encodeURIComponent(q)}`),
   },
 };

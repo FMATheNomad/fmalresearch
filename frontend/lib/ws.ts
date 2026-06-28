@@ -15,8 +15,8 @@ export class ResearchWebSocket {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   connect(sessionId: string) {
-    const base = getWsBase().replace(/\/ws$/, "")
-    const url = `${base}/ws/research/${sessionId}`;
+    const base = getWsBase().replace(/\/api\/ws$/, "")
+    const url = `${base}/api/ws/research/${sessionId}`;
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
