@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_PREFIX = "/api";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -13,7 +13,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${API_PREFIX}${path}`, { ...options, headers });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
@@ -53,5 +53,7 @@ export const api = {
       }>(`/research/${id}`),
     list: () =>
       request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>("/research"),
+    search: (q: string) =>
+      request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>(`/research/search?q=${encodeURIComponent(q)}`),
   },
 };

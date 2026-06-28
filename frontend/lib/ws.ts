@@ -1,13 +1,10 @@
+type MessageHandler = (data: any) => void;
+
 function getWsBase(): string {
   if (typeof window === "undefined") return "ws://localhost:8000";
-  if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${window.location.host}/ws`;
+  return `${proto}//${window.location.host}/api/ws`;
 }
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || getWsBase();
-
-type MessageHandler = (data: any) => void;
 
 export class ResearchWebSocket {
   private ws: WebSocket | null = null;
@@ -15,29 +12,21 @@ export class ResearchWebSocket {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   connect(sessionId: string) {
-    const base = getWsBase().replace(/\/ws$/, "")
-    const url = `${base}/ws/research/${sessionId}`;
+    const url = `wss://fmalresearch.up.railway.app/api/ws/research/${sessionId}`;
     this.ws = new WebSocket(url);
 
-    this.ws.onopen = () => {
-      this.emit("connected", {});
-    };
-
+    this.ws.onopen = () => this.emit("connected", {});
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         this.emit(data.type, data);
       } catch {}
     };
-
     this.ws.onclose = () => {
       this.emit("disconnected", {});
       this.reconnectTimer = setTimeout(() => this.connect(sessionId), 3000);
     };
-
-    this.ws.onerror = () => {
-      this.ws?.close();
-    };
+    this.ws.onerror = () => this.ws?.close();
   }
 
   disconnect() {

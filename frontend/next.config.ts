@@ -7,11 +7,11 @@ const nextConfig: NextConfig = {
   images: { domains: [] },
   async rewrites() {
     return [
-      { source: "/health", destination: `${BACKEND_URL}/health` },
-      { source: "/auth/:path*", destination: `${BACKEND_URL}/auth/:path*` },
-      { source: "/research/:path*", destination: `${BACKEND_URL}/research/:path*` },
-      { source: "/ws/:path*", destination: `${BACKEND_URL}/ws/:path*` },
-      { source: "/billing/:path*", destination: `${BACKEND_URL}/billing/:path*` },
+      { source: "/api/health", destination: `${BACKEND_URL}/health` },
+      { source: "/api/auth/:path*", destination: `${BACKEND_URL}/auth/:path*` },
+      { source: "/api/research/:path*", destination: `${BACKEND_URL}/research/:path*` },
+      { source: "/api/billing/:path*", destination: `${BACKEND_URL}/billing/:path*` },
+      { source: "/api/ws/:path*", destination: `${BACKEND_URL}/ws/:path*` },
     ];
   },
 };

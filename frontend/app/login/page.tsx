@@ -35,8 +35,7 @@ function LoginContent() {
     }
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
-  const googleLoginUrl = `${apiUrl}/auth/google/login`
+  const googleLoginUrl = "/api/auth/google/login"
 
   return (
     <Card className="w-full max-w-sm">
