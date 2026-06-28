@@ -154,6 +154,27 @@ async def continue_research(
     )
 
 
+@router.get("/{session_id}/sources")
+async def get_sources(
+    session_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    session = await db.get(ResearchSession, session_id)
+    if not session or session.user_id != user.id:
+        raise HTTPException(status_code=404, detail="Research session not found")
+
+    from app.models.research import Source
+    result = await db.execute(
+        select(Source).where(Source.session_id == session_id).order_by(Source.created_at)
+    )
+    sources = result.scalars().all()
+    return [
+        {"id": s.id, "url": s.url, "title": s.title or s.url, "quality_score": s.quality_score, "fetched": s.fetched}
+        for s in sources[:50]
+    ]
+
+
 @router.get("/{session_id}/export")
 async def export_research(
     session_id: str,

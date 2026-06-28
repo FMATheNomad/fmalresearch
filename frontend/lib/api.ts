@@ -63,5 +63,7 @@ export const api = {
       request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>("/research"),
     search: (q: string) =>
       request<Array<{ id: string; query: string; status: string; sources_count: number; cost_incurred: number }>>(`/research/search?q=${encodeURIComponent(q)}`),
+    sources: (id: string) =>
+      request<Array<{ id: string; url: string; title: string; quality_score?: number; fetched: boolean }>>(`/research/${id}/sources`),
   },
 };

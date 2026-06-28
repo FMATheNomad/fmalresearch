@@ -28,6 +28,7 @@ export default function ResearchDetailPage() {
   const [nodes, setNodes] = useState<GraphNode[]>([])
   const [edges, setEdges] = useState<GraphEdge[]>([])
   const [darkMode, setDarkMode] = useState(false)
+  const [sources, setSources] = useState<any[]>([])
   const nodesRef = useRef<GraphNode[]>([])
   const edgesRef = useRef<GraphEdge[]>([])
 
@@ -60,7 +61,8 @@ export default function ResearchDetailPage() {
           if (newEdge) setEdges([...edgesRef.current])
         }
 
-        if (s.status === "completed" && nodesRef.current.length > 0) {
+        if (s.status === "completed") {
+          try { const src = await api.research.sources(id); setSources(src) } catch {}
           const completed = nodesRef.current.map(n => ({ ...n, status: "completed" }))
           nodesRef.current = completed
           setNodes([...nodesRef.current])
@@ -171,9 +173,15 @@ export default function ResearchDetailPage() {
 
         <aside className="w-72 shrink-0 hidden lg:block space-y-4">
           <Card className={cardBg}>
-            <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Sources</CardTitle></CardHeader>
-            <CardContent className="text-sm">
-              <div className={`${muted}`}>{session.sources_count > 0 ? `${session.sources_count} sources` : "No sources"}</div>
+            <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Sources ({session.sources_count})</CardTitle></CardHeader>
+            <CardContent className="text-sm max-h-80 overflow-y-auto space-y-1.5">
+              {sources.length > 0 ? sources.slice(0, 20).map((s, i) => (
+                <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
+                  className={`block p-2 rounded-md text-xs truncate ${darkMode ? "hover:bg-slate-800 text-slate-300" : "hover:bg-amber-100 text-slate-600"} transition-colors`}>
+                  <span className="text-[10px] text-slate-500 mr-1">{i+1}.</span>
+                  {s.title || s.url}
+                </a>
+              )) : <div className={`${muted}`}>{session.sources_count > 0 ? `${session.sources_count} sources` : "No sources"}</div>}
             </CardContent>
           </Card>
           <Card className={cardBg}>
