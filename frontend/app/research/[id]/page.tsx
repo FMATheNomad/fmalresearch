@@ -31,45 +31,47 @@ export default function ResearchDetailPage() {
   const nodesRef = useRef<GraphNode[]>([])
   const edgesRef = useRef<GraphEdge[]>([])
 
-  const prevStatusRef = useRef("")
+  const sessionRef = useRef<any>(null)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) { router.push("/login"); return }
 
-    const steps = ["search", "fetch", "verify", "rerank"]
+    const steps = ["search", "fetch", "verify", "rerank", "cache"]
     let stepIdx = 0
 
     const poll = async () => {
-      await loadSession()
-      const s = nodesRef.current.length === 0
-      if (s && session?.status === "running") {
-        const step = steps[stepIdx % steps.length]
-        stepIdx++
-        const nodeId = `${step}-${Date.now()}`
-        const newNode: GraphNode = { id: nodeId, label: step, type: step, status: "running" }
-        const prev = nodesRef.current
-        const newEdge = prev.length > 0 ? { source: prev[prev.length - 1].id, target: nodeId } : null
-        nodesRef.current = [...prev, newNode]
-        if (newEdge) edgesRef.current = [...edgesRef.current, newEdge]
-        setNodes([...nodesRef.current])
-        if (newEdge) setEdges([...edgesRef.current])
-      }
-      if (session?.status === "completed" && nodesRef.current.length > 0) {
-        const lastNode = { ...nodesRef.current[nodesRef.current.length - 1], status: "completed" }
-        nodesRef.current[nodesRef.current.length - 1] = lastNode
-        setNodes([...nodesRef.current])
-      }
+      try {
+        const s = await api.research.get(id)
+        setSession(s)
+        setLoading(false)
+        sessionRef.current = s
+
+        if (s.status === "running") {
+          const step = steps[stepIdx % steps.length]
+          stepIdx++
+          const nodeId = `${step}-${Date.now()}`
+          const newNode: GraphNode = { id: nodeId, label: step, type: step, status: "running" }
+          const prev = nodesRef.current
+          const newEdge = prev.length > 0 ? { source: prev[prev.length - 1].id, target: nodeId } : null
+          nodesRef.current = [...prev, newNode]
+          if (newEdge) edgesRef.current = [...edgesRef.current, newEdge]
+          setNodes([...nodesRef.current])
+          if (newEdge) setEdges([...edgesRef.current])
+        }
+
+        if (s.status === "completed" && nodesRef.current.length > 0) {
+          const completed = nodesRef.current.map(n => ({ ...n, status: "completed" }))
+          nodesRef.current = completed
+          setNodes([...nodesRef.current])
+        }
+      } catch { setLoading(false) }
     }
 
     poll()
     const pollTimer = setInterval(poll, 3000)
     return () => clearInterval(pollTimer)
   }, [id])
-
-  async function loadSession() {
-    try { const s = await api.research.get(id); setSession(s); setLoading(false) } catch { setLoading(false) }
-  }
 
   const drawGraph = useCallback(() => {
     if (!svgRef.current || nodes.length === 0) return
