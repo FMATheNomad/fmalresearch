@@ -1,16 +1,95 @@
 import json
+import asyncio
 from typing import Any
 from openai import AsyncOpenAI
+from openai import APIError, APITimeoutError, RateLimitError
 from app.core.config import get_settings
+from app.core.logging import get_logger
 
 settings = get_settings()
+logger = get_logger("deepseek")
 
-client = AsyncOpenAI(
-    api_key=settings.deepseek_api_key,
-    base_url=settings.deepseek_base_url,
-)
+clients: dict[str, AsyncOpenAI] = {}
 
 
+def _get_client(provider: str = "deepseek") -> AsyncOpenAI:
+    if provider not in clients:
+        if provider == "deepseek":
+            clients[provider] = AsyncOpenAI(
+                api_key=settings.deepseek_api_key,
+                base_url=settings.deepseek_base_url,
+            )
+        elif provider == "openrouter":
+            if settings.openrouter_api_key:
+                clients[provider] = AsyncOpenAI(
+                    api_key=settings.openrouter_api_key,
+                    base_url=settings.openrouter_base_url,
+                )
+        elif provider == "openai":
+            clients[provider] = AsyncOpenAI(
+                api_key=settings.deepseek_api_key,
+                base_url="https://api.openai.com/v1",
+            )
+    return clients.get(provider)
+
+
+PROVIDER_FALLBACKS = {
+    "deepseek": ["openrouter"],
+    "openrouter": [],
+}
+
+MODEL_MAP = {
+    "deepseek": settings.deepseek_model,
+    "openrouter": "deepseek/deepseek-v4-flash",
+}
+
+
+async def chat_completion(
+    messages: list[dict],
+    mode: str = "balanced",
+    stream: bool = False,
+    tools_enabled: bool = True,
+    provider: str = "deepseek",
+) -> Any:
+    config = MODE_CONFIGS.get(mode, MODE_CONFIGS["balanced"])
+
+    kwargs = {
+        "model": MODEL_MAP.get(provider, settings.deepseek_model),
+        "messages": messages,
+        "max_tokens": config["max_tokens"],
+        "stream": stream,
+        "extra_body": {"thinking": {"type": "enabled"}},
+        "reasoning_effort": config["reasoning_effort"],
+    }
+
+    if tools_enabled:
+        kwargs["tools"] = get_tool_definitions()
+
+    errors = []
+
+    for attempt_provider in [provider] + PROVIDER_FALLBACKS.get(provider, []):
+        client = _get_client(attempt_provider)
+        if not client:
+            continue
+
+        try:
+            response = await client.chat.completions.create(**kwargs)
+            if attempt_provider != provider:
+                logger.info("fallback_used", from_provider=provider, to_provider=attempt_provider)
+            return response
+
+        except (APITimeoutError, RateLimitError, APIError) as e:
+            errors.append(f"{attempt_provider}: {str(e)[:100]}")
+            logger.warning("provider_failed", provider=attempt_provider, error=str(e)[:100])
+            await asyncio.sleep(2)
+            continue
+
+        except Exception as e:
+            errors.append(f"{attempt_provider}: {str(e)[:100]}")
+            continue
+
+    logger.error("all_providers_failed", provider=provider, errors=errors)
+    raise Exception(f"All providers failed: {'; '.join(errors)}")
 def get_tool_definitions() -> list[dict]:
     return [
         {
@@ -227,24 +306,3 @@ Domain-specific instructions:
 {domain_instruction}"""
 
 
-async def chat_completion(
-    messages: list[dict],
-    mode: str = "balanced",
-    stream: bool = False,
-    tools_enabled: bool = True,
-) -> Any:
-    config = MODE_CONFIGS.get(mode, MODE_CONFIGS["balanced"])
-
-    kwargs = {
-        "model": settings.deepseek_model,
-        "messages": messages,
-        "max_tokens": config["max_tokens"],
-        "stream": stream,
-        "extra_body": {"thinking": {"type": "enabled"}},
-        "reasoning_effort": config["reasoning_effort"],
-    }
-
-    if tools_enabled:
-        kwargs["tools"] = get_tool_definitions()
-
-    return await client.chat.completions.create(**kwargs)
