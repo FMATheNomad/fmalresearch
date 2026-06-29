@@ -250,17 +250,28 @@ export default function ResearchDetailPage() {
             <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Export</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <Button variant="outline" size="sm" className={`w-full ${darkMode ? "bg-transparent border-slate-700 text-white" : "bg-white"}`}
-                onClick={() => { if (session.report) navigator.clipboard.writeText(session.report) }}>Copy Text</Button>
+                onClick={() => { if (session.report) navigator.clipboard.writeText(session.report) }}>📋 Copy</Button>
               <Button variant="outline" size="sm" className={`w-full ${darkMode ? "bg-transparent border-slate-700 text-white" : "bg-white"}`}
-                onClick={() => window.open(`/research/${id}/export`, "_blank")}>Download MD</Button>
+                onClick={() => window.open(`/research/${id}/export`, "_blank")}>📥 MD</Button>
+              <Button variant="outline" size="sm" className={`w-full ${darkMode ? "bg-transparent border-slate-700 text-white" : "bg-white"}`}
+                onClick={() => window.print()}>🖨️ PDF</Button>
             </CardContent>
           </Card>
           <Card className={cardBg}>
             <CardHeader className="pb-2"><CardTitle className={`text-sm ${muted}`}>Meta</CardTitle></CardHeader>
-            <CardContent className={`text-xs space-y-1 ${muted}`}>
+            <CardContent className={`text-xs space-y-2 ${muted}`}>
               <p>Cost: ${session.cost_incurred?.toFixed(4)}</p>
               <p>Status: {session.status}</p>
               <p>Sources: {session.sources_count}</p>
+              <Button variant="outline" size="sm" className="w-full mt-2 text-xs border-slate-600 text-slate-300 hover:bg-slate-800"
+                onClick={() => {
+                  const q = prompt("Continue research with additional question:", "")
+                  if (q) fetch(`/api/research/${id}/continue`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+                    body: JSON.stringify({ query: q, mode: session.mode }),
+                  }).then(r => r.json()).then(d => { if (d.id) router.push(`/research/${d.id}`) })
+                }}>➕ Continue</Button>
             </CardContent>
           </Card>
         </aside>

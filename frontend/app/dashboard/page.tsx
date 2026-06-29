@@ -63,7 +63,7 @@ export default function DashboardPage() {
             <span className="font-semibold text-sm text-white">FMA Labs Research</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400">Balance: <strong className="text-emerald-400">${user?.balance.toFixed(2)}</strong></span>
+            <a href="/billing" className="text-xs text-slate-400 hover:text-white transition-colors">Balance: <strong className="text-emerald-400">${user?.balance.toFixed(2)}</strong></a>
             <span className="text-xs text-slate-400">{user?.name}</span>
             <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white text-xs"
               onClick={() => { localStorage.removeItem("token"); router.push("/") }}>Logout</Button>
