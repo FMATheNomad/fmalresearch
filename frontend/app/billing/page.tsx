@@ -27,7 +27,7 @@ export default function BillingPage() {
     try {
       const [u, b, s] = await Promise.all([
         api.auth.me(),
-        fetch("/api/billing/balance").then(r => r.json()),
+        fetch("/billing/balance").then(r => r.json()),
         api.research.list(),
       ])
       setUser(u)
@@ -40,7 +40,7 @@ export default function BillingPage() {
 
   async function handleTopUp() {
     try {
-      const res = await fetch(`/api/billing/top-up?amount=${topUpAmount}`, {
+      const res = await fetch(`/billing/top-up?amount=${topUpAmount}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
