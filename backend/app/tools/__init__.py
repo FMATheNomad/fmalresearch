@@ -4,6 +4,7 @@ from app.tools.meilisearch import search_cache, index_source
 from app.tools.bge_reranker import rerank as bge_rerank
 from app.tools.verification import verify_claim
 from app.tools.semantic_scholar import search_papers, get_paper_details
+from app.tools.source_quality import get_source_quality
 
 TOOL_REGISTRY = {
     "search_searxng": searxng_search,

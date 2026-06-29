@@ -117,7 +117,8 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-medium text-white">Research History</h2>
             <div className="flex-1" />
-            <Input placeholder="Search research..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
+            <Button variant="ghost" size="sm" onClick={() => router.push("/knowledge")} className="text-slate-400 hover:text-white text-xs">📚 Vault</Button>
+          <Input placeholder="Search research..." value={searchQ} onChange={(e) => setSearchQ(e.target.value)}
               className="max-w-xs bg-slate-900 border-slate-800 text-white placeholder:text-slate-500 text-xs h-8" />
           </div>
 

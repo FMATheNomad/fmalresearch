@@ -240,8 +240,16 @@ export default function ResearchDetailPage() {
               {sources.length > 0 ? sources.slice(0, 20).map((s, i) => (
                 <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
                   className={`block p-2 rounded-md text-xs truncate ${darkMode ? "hover:bg-slate-800 text-slate-300" : "hover:bg-amber-100 text-slate-600"} transition-colors`}>
-                  <span className="text-[10px] text-slate-500 mr-1">{i+1}.</span>
-                  {s.title || s.url}
+                  <span className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      (s.quality_score || 0) >= 85 ? "bg-emerald-400"
+                      : (s.quality_score || 0) >= 70 ? "bg-blue-400"
+                      : (s.quality_score || 0) >= 50 ? "bg-yellow-400"
+                      : "bg-red-400"
+                    }`} />
+                    <span className="truncate">{s.title || s.url}</span>
+                    <span className="text-[9px] text-slate-500 shrink-0 ml-auto">{s.quality_label || ""}</span>
+                  </span>
                 </a>
               )) : <div className={`${muted}`}>{session.sources_count > 0 ? `${session.sources_count} sources` : "No sources"}</div>}
             </CardContent>

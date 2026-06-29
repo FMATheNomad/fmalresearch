@@ -165,14 +165,22 @@ async def get_sources(
         raise HTTPException(status_code=404, detail="Research session not found")
 
     from app.models.research import Source
+    from app.tools.source_quality import get_source_quality
     result = await db.execute(
         select(Source).where(Source.session_id == session_id).order_by(Source.created_at)
     )
     sources = result.scalars().all()
-    return [
-        {"id": s.id, "url": s.url, "title": s.title or s.url, "quality_score": s.quality_score, "fetched": s.fetched}
-        for s in sources[:50]
-    ]
+    output = []
+    for s in sources[:50]:
+        quality = get_source_quality(s.url, s.title or "")
+        output.append({
+            "id": s.id, "url": s.url, "title": s.title or s.url,
+            "quality_score": quality["quality_score"],
+            "quality_label": quality["label"],
+            "quality_freshness": quality["freshness"],
+            "fetched": s.fetched,
+        })
+    return output
 
 
 @router.get("/{session_id}/export")
